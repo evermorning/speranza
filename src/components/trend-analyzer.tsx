@@ -87,7 +87,7 @@ export default function TrendAnalyzerComponent({ apiKey }: TrendAnalyzerProps) {
     
     try {
       const videos = await youtubeAPI.searchVideos(searchQuery, 25);
-      const videosWithScore = videos.map(video => ({
+      const videosWithScore = videos.map((video: any) => ({
         ...video,
         viewCount: 0,
         likeCount: 0,

@@ -16,9 +16,8 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  experimental: {
-    serverComponentsExternalPackages: ['googleapis'],
-  },
+  serverExternalPackages: ['googleapis'],
+  output: 'standalone',
 };
 
 export default nextConfig;

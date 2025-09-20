@@ -52,9 +52,9 @@ export class ContentGenerator {
       const words = video.title.toLowerCase()
         .replace(/[^\w\s가-힣]/g, '')
         .split(/\s+/)
-        .filter(word => word.length > 2);
+        .filter((word: string) => word.length > 2);
       
-      words.forEach(word => {
+      words.forEach((word: string) => {
         titleWords[word] = (titleWords[word] || 0) + 1;
       });
     });
@@ -72,8 +72,8 @@ export class ContentGenerator {
     const contentTypes = preferences.contentTypes || ['리뷰', '튜토리얼', '브이로그'];
 
     // 키워드 기반 아이디어
-    keywords.slice(0, 5).forEach(keyword => {
-      contentTypes.forEach(type => {
+    keywords.slice(0, 5).forEach((keyword: string) => {
+      contentTypes.forEach((type: string) => {
         ideas.push(`${keyword} ${type} - 최신 트렌드 분석`);
         ideas.push(`${keyword} 완전정복 - ${type} 가이드`);
         ideas.push(`${keyword} 실전 ${type} - 꿀팁 공개`);
@@ -81,14 +81,14 @@ export class ContentGenerator {
     });
 
     // 토픽 기반 아이디어
-    topics.slice(0, 3).forEach(topic => {
+    topics.slice(0, 3).forEach((topic: string) => {
       ideas.push(`${topic} 관련 최신 소식 정리`);
       ideas.push(`${topic}에 대한 솔직한 후기`);
       ideas.push(`${topic} 완전 분석 - 모든 것`);
     });
 
     // 카테고리별 아이디어
-    categories.forEach(category => {
+    categories.forEach((category: string) => {
       ideas.push(`${category} 카테고리 인기 콘텐츠 분석`);
       ideas.push(`${category}에서 성공하는 방법`);
       ideas.push(`${category} 트렌드 예측`);
@@ -113,8 +113,8 @@ export class ContentGenerator {
       "{keyword} 트렌드 예측 - 미래는?",
     ];
 
-    keywords.slice(0, 5).forEach(keyword => {
-      templates.forEach(template => {
+    keywords.slice(0, 5).forEach((keyword: string) => {
+      templates.forEach((template: string) => {
         const number = Math.floor(Math.random() * 30) + 5;
         suggestions.push(
           template
@@ -182,7 +182,7 @@ export class ContentGenerator {
       '#인기', '#화제', '#리뷰', '#가이드', '#팁'
     ];
 
-    const keywordHashtags = keywords.slice(0, 10).map(keyword => `#${keyword}`);
+    const keywordHashtags = keywords.slice(0, 10).map((keyword: string) => `#${keyword}`);
     
     return [...baseHashtags, ...keywordHashtags];
   }
@@ -195,7 +195,7 @@ export class ContentGenerator {
       'Q&A', '챌린지', '라이브'
     ];
 
-    return days.map((day, index) => ({
+    return days.map((day: string, index: number) => ({
       day,
       suggestedContent: contentTypes[index % contentTypes.length],
       bestTime: this.getBestPostingTime(index),
@@ -218,8 +218,8 @@ export class ContentGenerator {
     const ideaKeywords = contentIdea.toLowerCase().split(/\s+/);
     
     // 키워드 매칭 점수
-    const keywordMatch = ideaKeywords.filter(keyword => 
-      keywords.some(trendKeyword => trendKeyword.includes(keyword))
+    const keywordMatch = ideaKeywords.filter((keyword: string) => 
+      keywords.some((trendKeyword: string) => trendKeyword.includes(keyword))
     ).length;
 
     // 예상 조회수 (간단한 휴리스틱)
