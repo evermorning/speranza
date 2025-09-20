@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { YouTubeAPI, TrendAnalyzer } from '@/lib/youtube-api';
+import { YouTubeClient, TrendAnalyzer } from '@/lib/youtube-client';
 import { TrendingUp, Eye, Heart, MessageCircle, Clock, Tag } from 'lucide-react';
 
 interface TrendAnalyzerProps {
@@ -48,7 +48,7 @@ export default function TrendAnalyzerComponent({ apiKey }: TrendAnalyzerProps) {
     { id: '28', name: '과학기술' },
   ];
 
-  const youtubeAPI = new YouTubeAPI(apiKey);
+  const youtubeAPI = new YouTubeClient(apiKey);
 
   const fetchTrendingVideos = async () => {
     setLoading(true);
