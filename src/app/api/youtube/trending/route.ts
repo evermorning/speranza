@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { google } from 'googleapis';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,30 +12,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'API 키가 필요합니다.' }, { status: 400 });
     }
 
-    const youtube = google.youtube({
-      version: 'v3',
-      auth: apiKey,
-    });
-
-    let response;
+    // YouTube Data API v3 직접 호출
+    let url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&chart=mostPopular&regionCode=${regionCode}&maxResults=${maxResults}&key=${apiKey}`;
+    
     if (categoryId && categoryId !== 'all') {
-      response = await youtube.videos.list({
-        part: ['snippet', 'statistics', 'contentDetails'],
-        chart: 'mostPopular',
-        regionCode,
-        videoCategoryId: categoryId,
-        maxResults,
-      });
-    } else {
-      response = await youtube.videos.list({
-        part: ['snippet', 'statistics', 'contentDetails'],
-        chart: 'mostPopular',
-        regionCode,
-        maxResults,
-      });
+      url += `&videoCategoryId=${categoryId}`;
     }
 
-    const videos = response.data.items?.map((video: any) => ({
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'YouTube API 요청에 실패했습니다.');
+    }
+
+    const data = await response.json();
+    const videos = data.items?.map((video: any) => ({
       id: video.id,
       title: video.snippet.title,
       description: video.snippet.description,

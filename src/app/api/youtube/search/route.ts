@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { google } from 'googleapis';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,20 +15,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '검색 쿼리가 필요합니다.' }, { status: 400 });
     }
 
-    const youtube = google.youtube({
-      version: 'v3',
-      auth: apiKey,
-    });
+    // YouTube Data API v3 직접 호출
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&order=relevance&maxResults=${maxResults}&key=${apiKey}`;
 
-    const response = await youtube.search.list({
-      part: ['snippet'],
-      q: query,
-      type: 'video',
-      order: 'relevance',
-      maxResults,
-    });
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'YouTube API 요청에 실패했습니다.');
+    }
 
-    const videos = response.data.items?.map((item: any) => ({
+    const data = await response.json();
+    const videos = data.items?.map((item: any) => ({
       id: item.id.videoId,
       title: item.snippet.title,
       description: item.snippet.description,
