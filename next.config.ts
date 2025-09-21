@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ['googleapis'],
   output: 'standalone',
+  experimental: {
+    // Hydration mismatch 문제 해결을 위한 설정
+    optimizePackageImports: ['lucide-react'],
+  },
 };
 
 export default nextConfig;
