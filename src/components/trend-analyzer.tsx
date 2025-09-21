@@ -149,8 +149,9 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
       case 'comments':
         return sortedVideos.sort((a, b) => b.commentCount - a.commentCount);
       case 'trend':
-      default:
         return sortedVideos.sort((a, b) => (b.trendScore || 0) - (a.trendScore || 0));
+      default:
+        return sortedVideos.sort((a, b) => b.viewCount - a.viewCount); // 기본값을 조회수로 변경
     }
   };
 
@@ -202,20 +203,20 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
             <span className="text-sm font-medium text-gray-300">정렬:</span>
             <div className="flex gap-2">
               <Button
-                variant={sortBy === 'trend' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSortBy('trend')}
-              >
-                <TrendingUp className="h-4 w-4 mr-1" />
-                트렌드
-              </Button>
-              <Button
                 variant={sortBy === 'views' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setSortBy('views')}
               >
                 <Eye className="h-4 w-4 mr-1" />
                 조회수
+              </Button>
+              <Button
+                variant={sortBy === 'trend' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortBy('trend')}
+              >
+                <TrendingUp className="h-4 w-4 mr-1" />
+                트렌드
               </Button>
               <Button
                 variant={sortBy === 'likes' ? 'default' : 'outline'}
