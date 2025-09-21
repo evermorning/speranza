@@ -5,11 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import TrendAnalyzerComponent from '@/components/trend-analyzer';
-import ContentGeneratorComponent from '@/components/content-generator';
 import { 
   Youtube, 
   TrendingUp, 
-  Lightbulb, 
   Settings, 
   BarChart3,
   Sparkles,
@@ -19,7 +17,7 @@ import {
 
 export default function Home() {
   const [apiKey, setApiKey] = useState('');
-  const [trendData, setTrendData] = useState([]);
+  const [trendData, setTrendData] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('trend');
   const [isConfigured, setIsConfigured] = useState(false);
 
@@ -42,7 +40,6 @@ export default function Home() {
 
   const tabs = [
     { id: 'trend', label: '트렌드 분석', icon: TrendingUp },
-    { id: 'content', label: '콘텐츠 생성', icon: Lightbulb },
     { id: 'analytics', label: '분석 대시보드', icon: BarChart3 },
   ];
 
@@ -147,17 +144,7 @@ export default function Home() {
                   </CardHeader>
                 </Card>
 
-                <Card className="hover:shadow-lg transition-shadow bg-gray-800 border-gray-700">
-                  <CardHeader>
-                    <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-4">
-                      <Lightbulb className="h-6 w-6 text-white" />
-                    </div>
-                    <CardTitle className="text-white">AI 콘텐츠 생성</CardTitle>
-                    <CardDescription className="text-gray-300">
-                      AI가 당신의 채널에 맞는 맞춤형 콘텐츠 아이디어를 생성합니다
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
+
 
                 <Card className="hover:shadow-lg transition-shadow bg-gray-800 border-gray-700">
                   <CardHeader>
@@ -201,18 +188,56 @@ export default function Home() {
             {/* 탭 콘텐츠 */}
             <div className="space-y-6">
               {activeTab === 'trend' && (
-                <TrendAnalyzerComponent apiKey={apiKey} />
+                <TrendAnalyzerComponent 
+                  apiKey={apiKey} 
+                  onDataUpdate={(videos) => setTrendData(videos)} 
+                />
               )}
               
-              {activeTab === 'content' && (
-                <ContentGeneratorComponent trendData={trendData} />
-              )}
               
               {activeTab === 'analytics' && (
-                <div className="text-center py-12">
-                  <BarChart3 className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-white mb-2">분석 대시보드</h3>
-                  <p className="text-gray-400">곧 출시될 예정입니다</p>
+                <div className="space-y-6">
+                  <Card className="bg-gray-800 border-gray-700">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-white">
+                        <BarChart3 className="h-5 w-5" />
+                        분석 대시보드
+                      </CardTitle>
+                      <CardDescription className="text-gray-300">
+                        트렌딩 비디오의 상세 분석 데이터를 확인하세요
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="relative overflow-x-auto">
+                        <table className="w-full text-sm text-left text-gray-300">
+                          <thead className="text-xs uppercase bg-gray-700">
+                            <tr>
+                              <th scope="col" className="px-6 py-3">동영상 제목</th>
+                              <th scope="col" className="px-6 py-3">채널명</th>
+                              <th scope="col" className="px-6 py-3">조회수</th>
+                              <th scope="col" className="px-6 py-3">게시일</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {trendData.map((video: any) => (
+                              <tr key={video.id} className="border-b border-gray-700 hover:bg-gray-700">
+                                <td className="px-6 py-4 font-medium">
+                                  <div className="line-clamp-1">{video.title}</div>
+                                </td>
+                                <td className="px-6 py-4">{video.channelTitle}</td>
+                                <td className="px-6 py-4">
+                                  {video.viewCount ? (video.viewCount / 10000).toFixed(1) + '만' : '0'}
+                                </td>
+                                <td className="px-6 py-4">
+                                  {new Date(video.publishedAt).toLocaleDateString()}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               )}
             </div>

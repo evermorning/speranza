@@ -9,6 +9,7 @@ import { TrendingUp, Eye, Heart, MessageCircle, Clock, Tag } from 'lucide-react'
 
 interface TrendAnalyzerProps {
   apiKey: string;
+  onDataUpdate?: (videos: VideoData[]) => void;
 }
 
 interface VideoData {
@@ -24,13 +25,14 @@ interface VideoData {
   trendScore?: number;
 }
 
-export default function TrendAnalyzerComponent({ apiKey }: TrendAnalyzerProps) {
+export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAnalyzerProps) {
   const [trendingVideos, setTrendingVideos] = useState<VideoData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [popularKeywords, setPopularKeywords] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<'trend' | 'views' | 'likes' | 'comments'>('trend');
 
   const categories = [
     { id: 'all', name: '전체' },
@@ -71,6 +73,11 @@ export default function TrendAnalyzerComponent({ apiKey }: TrendAnalyzerProps) {
       const keywords = TrendAnalyzer.extractPopularKeywords(videos);
       setPopularKeywords(keywords);
       
+      // 부모 컴포넌트에 데이터 전달
+      if (onDataUpdate) {
+        onDataUpdate(videosWithScore);
+      }
+      
     } catch (err) {
       setError('트렌딩 비디오를 가져오는데 실패했습니다. API 키를 확인해주세요.');
       console.error('Error fetching trending videos:', err);
@@ -87,16 +94,13 @@ export default function TrendAnalyzerComponent({ apiKey }: TrendAnalyzerProps) {
     
     try {
       const videos = await youtubeAPI.searchVideos(searchQuery, 25);
-      const videosWithScore = videos.map((video: any) => ({
-        ...video,
-        viewCount: 0,
-        likeCount: 0,
-        commentCount: 0,
-        tags: [],
-        trendScore: 0
-      }));
-      
+      const videosWithScore = TrendAnalyzer.getTopTrendingVideos(videos);
       setTrendingVideos(videosWithScore);
+      
+      // 부모 컴포넌트에 검색 결과 전달
+      if (onDataUpdate) {
+        onDataUpdate(videosWithScore);
+      }
     } catch (err) {
       setError('비디오 검색에 실패했습니다.');
       console.error('Error searching videos:', err);
@@ -112,10 +116,10 @@ export default function TrendAnalyzerComponent({ apiKey }: TrendAnalyzerProps) {
   }, [apiKey, selectedCategory]);
 
   const formatNumber = (num: number) => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 10000) {
+      return (num / 10000).toFixed(1) + '만';
     } else if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K';
+      return (num / 1000).toFixed(1) + '천';
     }
     return num.toString();
   };
@@ -132,6 +136,26 @@ export default function TrendAnalyzerComponent({ apiKey }: TrendAnalyzerProps) {
       return `${diffInDays}일 전`;
     }
   };
+
+  // 정렬 함수
+  const sortVideos = (videos: VideoData[], sortType: string) => {
+    const sortedVideos = [...videos];
+    
+    switch (sortType) {
+      case 'views':
+        return sortedVideos.sort((a, b) => b.viewCount - a.viewCount);
+      case 'likes':
+        return sortedVideos.sort((a, b) => b.likeCount - a.likeCount);
+      case 'comments':
+        return sortedVideos.sort((a, b) => b.commentCount - a.commentCount);
+      case 'trend':
+      default:
+        return sortedVideos.sort((a, b) => (b.trendScore || 0) - (a.trendScore || 0));
+    }
+  };
+
+  // 정렬된 비디오 목록
+  const sortedVideos = sortVideos(trendingVideos, sortBy);
 
   return (
     <div className="space-y-6">
@@ -171,6 +195,45 @@ export default function TrendAnalyzerComponent({ apiKey }: TrendAnalyzerProps) {
                 {category.name}
               </Button>
             ))}
+          </div>
+          
+          {/* 정렬 옵션 */}
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-300">정렬:</span>
+            <div className="flex gap-2">
+              <Button
+                variant={sortBy === 'trend' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortBy('trend')}
+              >
+                <TrendingUp className="h-4 w-4 mr-1" />
+                트렌드
+              </Button>
+              <Button
+                variant={sortBy === 'views' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortBy('views')}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                조회수
+              </Button>
+              <Button
+                variant={sortBy === 'likes' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortBy('likes')}
+              >
+                <Heart className="h-4 w-4 mr-1" />
+                좋아요
+              </Button>
+              <Button
+                variant={sortBy === 'comments' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSortBy('comments')}
+              >
+                <MessageCircle className="h-4 w-4 mr-1" />
+                댓글
+              </Button>
+            </div>
           </div>
           
           <Button onClick={fetchTrendingVideos} disabled={loading} className="w-full">
@@ -214,7 +277,7 @@ export default function TrendAnalyzerComponent({ apiKey }: TrendAnalyzerProps) {
 
       {/* 트렌딩 비디오 목록 */}
       <div className="grid gap-4">
-        {trendingVideos.map((video, index) => (
+        {sortedVideos.map((video, index) => (
           <Card key={video.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex gap-4">
@@ -292,7 +355,7 @@ export default function TrendAnalyzerComponent({ apiKey }: TrendAnalyzerProps) {
         ))}
       </div>
 
-      {trendingVideos.length === 0 && !loading && !error && (
+      {sortedVideos.length === 0 && !loading && !error && (
         <Card>
           <CardContent className="pt-6 text-center">
             <p className="text-gray-500">트렌딩 비디오가 없습니다.</p>

@@ -26,13 +26,24 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    const videos = data.items?.map((item: any) => ({
-      id: item.id.videoId,
+    const videoIds = data.items?.map((item: any) => item.id.videoId) || [];
+    
+    // Fetch video statistics
+    const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoIds.join(',')}&key=${apiKey}`;
+    const statsResponse = await fetch(statsUrl);
+    const statsData = await statsResponse.json();
+
+    const videos = statsData.items?.map((item: any) => ({
+      id: item.id,
       title: item.snippet.title,
       description: item.snippet.description,
       channelTitle: item.snippet.channelTitle,
       publishedAt: item.snippet.publishedAt,
       thumbnails: item.snippet.thumbnails,
+      tags: item.snippet.tags || [],
+      viewCount: parseInt(item.statistics.viewCount) || 0,
+      likeCount: parseInt(item.statistics.likeCount) || 0,
+      commentCount: parseInt(item.statistics.commentCount) || 0,
     })) || [];
 
     return NextResponse.json({ videos });
