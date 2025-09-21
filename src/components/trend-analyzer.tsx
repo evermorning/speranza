@@ -32,7 +32,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [popularKeywords, setPopularKeywords] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<'trend' | 'views' | 'likes' | 'comments'>('trend');
+  const [sortBy, setSortBy] = useState<'trend' | 'views' | 'likes' | 'comments'>('views');
 
   const categories = [
     { id: 'all', name: '전체' },
