@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { YouTubeClient, TrendAnalyzer } from '@/lib/youtube-client';
-import { TrendingUp, Eye, Heart, MessageCircle, Clock, Tag } from 'lucide-react';
+import { TrendingUp, Eye, Heart, MessageCircle, Clock, Tag, Brain } from 'lucide-react';
 
 interface TrendAnalyzerProps {
   apiKey: string;
@@ -23,6 +23,7 @@ interface VideoData {
   thumbnails: any;
   tags: string[];
   trendScore?: number;
+  algorithmScore?: number;
 }
 
 export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAnalyzerProps) {
@@ -32,7 +33,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [popularKeywords, setPopularKeywords] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<'trend' | 'views' | 'likes' | 'comments'>('views');
+  const [sortBy, setSortBy] = useState<'trend' | 'views' | 'likes' | 'comments' | 'algorithm'>('views');
 
   const categories = [
     { id: 'all', name: '전체' },
@@ -156,6 +157,8 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
         return sortedVideos.sort((a, b) => b.commentCount - a.commentCount);
       case 'trend':
         return sortedVideos.sort((a, b) => (b.trendScore || 0) - (a.trendScore || 0));
+      case 'algorithm':
+        return sortedVideos.sort((a, b) => (b.algorithmScore || 0) - (a.algorithmScore || 0));
       default:
         return sortedVideos.sort((a, b) => b.viewCount - a.viewCount); // 기본값을 조회수로 설정
     }
@@ -207,7 +210,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
            {/* 정렬 옵션 */}
            <div className="flex items-center gap-4">
              <span className="text-sm font-medium text-gray-300">정렬:</span>
-             <div className="flex gap-2">
+             <div className="flex gap-2 flex-wrap">
                <Button
                  variant={sortBy === 'views' ? 'default' : 'outline'}
                  size="sm"
@@ -215,6 +218,14 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                >
                  <Eye className="h-4 w-4 mr-1" />
                  조회수
+               </Button>
+               <Button
+                 variant={sortBy === 'algorithm' ? 'default' : 'outline'}
+                 size="sm"
+                 onClick={() => setSortBy('algorithm')}
+               >
+                 <Brain className="h-4 w-4 mr-1" />
+                 알고리즘
                </Button>
                <Button
                  variant={sortBy === 'trend' ? 'default' : 'outline'}
@@ -326,21 +337,50 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                     {video.channelTitle}
                   </p>
                   
-                  {/* 트렌드 점수 */}
-                  {video.trendScore !== undefined && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">트렌드 점수:</span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-500 h-2 rounded-full"
-                          style={{ width: `${Math.min((video.trendScore / 100) * 100, 100)}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-gray-600">
-                        {video.trendScore.toFixed(1)}
-                      </span>
-                    </div>
-                  )}
+                   {/* 스코어 정보 */}
+                   <div className="space-y-2">
+                     {/* 알고리즘 스코어 */}
+                     {video.algorithmScore !== undefined && (
+                       <div className="flex items-center gap-2">
+                         <span className="text-sm font-medium flex items-center gap-1">
+                           <Brain className="h-4 w-4" />
+                           알고리즘 스코어:
+                         </span>
+                         <div className="flex-1 bg-gray-200 rounded-full h-2">
+                           <div
+                             className={`h-2 rounded-full ${
+                               video.algorithmScore >= 80 ? 'bg-green-500' :
+                               video.algorithmScore >= 60 ? 'bg-yellow-500' :
+                               video.algorithmScore >= 40 ? 'bg-orange-500' : 'bg-red-500'
+                             }`}
+                             style={{ width: `${Math.min(video.algorithmScore, 100)}%` }}
+                           />
+                         </div>
+                         <span className="text-sm font-semibold">
+                           {video.algorithmScore.toFixed(1)}
+                         </span>
+                       </div>
+                     )}
+                     
+                     {/* 트렌드 점수 */}
+                     {video.trendScore !== undefined && (
+                       <div className="flex items-center gap-2">
+                         <span className="text-sm font-medium flex items-center gap-1">
+                           <TrendingUp className="h-4 w-4" />
+                           트렌드 점수:
+                         </span>
+                         <div className="flex-1 bg-gray-200 rounded-full h-2">
+                           <div
+                             className="bg-blue-500 h-2 rounded-full"
+                             style={{ width: `${Math.min((video.trendScore / 100) * 100, 100)}%` }}
+                           />
+                         </div>
+                         <span className="text-sm text-gray-600">
+                           {video.trendScore.toFixed(1)}
+                         </span>
+                       </div>
+                     )}
+                   </div>
                   
                   {/* 태그 */}
                   {video.tags && video.tags.length > 0 && (

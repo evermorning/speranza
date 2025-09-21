@@ -135,12 +135,42 @@ export class TrendAnalyzer {
     return (viewCount * timeWeight * (1 + engagementScore)) / 1000000;
   }
 
+  // YouTube 알고리즘 스코어 계산
+  static calculateAlgorithmScore(video: any): number {
+    const viewCount = video.viewCount || 0;
+    const likeCount = video.likeCount || 0;
+    const commentCount = video.commentCount || 0;
+    const publishedAt = new Date(video.publishedAt);
+    const now = new Date();
+    const hoursSincePublished = (now.getTime() - publishedAt.getTime()) / (1000 * 60 * 60);
+
+    // 1. 조회수 점수 (0-40점)
+    const viewScore = Math.min(40, (viewCount / 1000000) * 40);
+
+    // 2. 참여도 점수 (0-25점)
+    const engagementRate = (likeCount + commentCount * 2) / Math.max(viewCount, 1);
+    const engagementScore = Math.min(25, engagementRate * 1000 * 25);
+
+    // 3. 시간 신선도 점수 (0-20점)
+    const freshnessScore = Math.max(0, 20 * (1 - hoursSincePublished / 72)); // 3일 기준
+
+    // 4. 상호작용 속도 점수 (0-15점)
+    const interactionSpeed = (likeCount + commentCount) / Math.max(hoursSincePublished, 1);
+    const speedScore = Math.min(15, interactionSpeed / 100 * 15);
+
+    // 총점 계산 (0-100점)
+    const totalScore = viewScore + engagementScore + freshnessScore + speedScore;
+    
+    return Math.min(100, Math.max(0, totalScore));
+  }
+
   // 상위 트렌드 동영상 필터링
   static getTopTrendingVideos(videos: any[], limit: number = 10): any[] {
     return videos
       .map(video => ({
         ...video,
         trendScore: this.calculateTrendScore(video),
+        algorithmScore: this.calculateAlgorithmScore(video),
       }))
       .sort((a, b) => b.trendScore - a.trendScore)
       .slice(0, limit);
