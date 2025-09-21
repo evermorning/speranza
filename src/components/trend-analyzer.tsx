@@ -151,7 +151,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
       case 'trend':
         return sortedVideos.sort((a, b) => (b.trendScore || 0) - (a.trendScore || 0));
       default:
-        return sortedVideos.sort((a, b) => b.viewCount - a.viewCount); // 기본값을 조회수로 변경
+        return sortedVideos.sort((a, b) => b.viewCount - a.viewCount); // 기본값을 조회수로 설정
     }
   };
 
@@ -198,44 +198,44 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
             ))}
           </div>
           
-          {/* 정렬 옵션 */}
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-300">정렬:</span>
-            <div className="flex gap-2">
-              <Button
-                variant={sortBy === 'views' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSortBy('views')}
-              >
-                <Eye className="h-4 w-4 mr-1" />
-                조회수
-              </Button>
-              <Button
-                variant={sortBy === 'trend' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSortBy('trend')}
-              >
-                <TrendingUp className="h-4 w-4 mr-1" />
-                트렌드
-              </Button>
-              <Button
-                variant={sortBy === 'likes' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSortBy('likes')}
-              >
-                <Heart className="h-4 w-4 mr-1" />
-                좋아요
-              </Button>
-              <Button
-                variant={sortBy === 'comments' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSortBy('comments')}
-              >
-                <MessageCircle className="h-4 w-4 mr-1" />
-                댓글
-              </Button>
-            </div>
-          </div>
+           {/* 정렬 옵션 */}
+           <div className="flex items-center gap-4">
+             <span className="text-sm font-medium text-gray-300">정렬:</span>
+             <div className="flex gap-2">
+               <Button
+                 variant={sortBy === 'views' ? 'default' : 'outline'}
+                 size="sm"
+                 onClick={() => setSortBy('views')}
+               >
+                 <Eye className="h-4 w-4 mr-1" />
+                 조회수
+               </Button>
+               <Button
+                 variant={sortBy === 'trend' ? 'default' : 'outline'}
+                 size="sm"
+                 onClick={() => setSortBy('trend')}
+               >
+                 <TrendingUp className="h-4 w-4 mr-1" />
+                 트렌드
+               </Button>
+               <Button
+                 variant={sortBy === 'likes' ? 'default' : 'outline'}
+                 size="sm"
+                 onClick={() => setSortBy('likes')}
+               >
+                 <Heart className="h-4 w-4 mr-1" />
+                 좋아요
+               </Button>
+               <Button
+                 variant={sortBy === 'comments' ? 'default' : 'outline'}
+                 size="sm"
+                 onClick={() => setSortBy('comments')}
+               >
+                 <MessageCircle className="h-4 w-4 mr-1" />
+                 댓글
+               </Button>
+             </div>
+           </div>
           
           <Button onClick={fetchTrendingVideos} disabled={loading} className="w-full">
             {loading ? '분석 중...' : '트렌드 새로고침'}
