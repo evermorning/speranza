@@ -67,7 +67,10 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
       
       // 트렌드 점수 계산
       const videosWithScore = TrendAnalyzer.getTopTrendingVideos(videos, 20);
-      setTrendingVideos(videosWithScore);
+      
+      // 조회수 기준으로 정렬 (기본값)
+      const sortedVideos = videosWithScore.sort((a, b) => b.viewCount - a.viewCount);
+      setTrendingVideos(sortedVideos);
       
       // 인기 키워드 추출
       const keywords = TrendAnalyzer.extractPopularKeywords(videos);
@@ -75,7 +78,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
       
       // 부모 컴포넌트에 데이터 전달
       if (onDataUpdate) {
-        onDataUpdate(videosWithScore);
+        onDataUpdate(sortedVideos);
       }
       
     } catch (err) {
@@ -95,11 +98,14 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
     try {
       const videos = await youtubeAPI.searchVideos(searchQuery, 25);
       const videosWithScore = TrendAnalyzer.getTopTrendingVideos(videos);
-      setTrendingVideos(videosWithScore);
+      
+      // 조회수 기준으로 정렬 (기본값)
+      const sortedVideos = videosWithScore.sort((a, b) => b.viewCount - a.viewCount);
+      setTrendingVideos(sortedVideos);
       
       // 부모 컴포넌트에 검색 결과 전달
       if (onDataUpdate) {
-        onDataUpdate(videosWithScore);
+        onDataUpdate(sortedVideos);
       }
     } catch (err) {
       setError('비디오 검색에 실패했습니다.');
