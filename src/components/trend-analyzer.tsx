@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { YouTubeClient, TrendAnalyzer } from '@/lib/youtube-client';
-import { TrendingUp, Eye, Heart, MessageCircle, Clock, Tag, Brain } from 'lucide-react';
+import { TrendingUp, Eye, Heart, MessageCircle, Clock, Tag, Brain, Grid3X3, Table } from 'lucide-react';
 
 interface TrendAnalyzerProps {
   apiKey: string;
@@ -34,6 +34,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [popularKeywords, setPopularKeywords] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'trend' | 'views' | 'likes' | 'comments' | 'algorithm'>('views');
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
 
   const categories = [
     { id: 'all', name: '전체' },
@@ -207,8 +208,8 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
             ))}
           </div>
           
-           {/* 정렬 옵션 */}
-           <div className="flex items-center gap-4">
+           {/* 정렬 및 뷰 옵션 */}
+           <div className="flex items-center gap-4 flex-wrap">
              <span className="text-sm font-medium text-gray-300">정렬:</span>
              <div className="flex gap-2 flex-wrap">
                <Button
@@ -252,6 +253,27 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                  댓글
                </Button>
              </div>
+             
+             {/* 뷰 모드 전환 */}
+             <div className="flex gap-2">
+               <span className="text-sm font-medium text-gray-300">보기:</span>
+               <Button
+                 variant={viewMode === 'card' ? 'default' : 'outline'}
+                 size="sm"
+                 onClick={() => setViewMode('card')}
+               >
+                 <Grid3X3 className="h-4 w-4 mr-1" />
+                 카드
+               </Button>
+               <Button
+                 variant={viewMode === 'table' ? 'default' : 'outline'}
+                 size="sm"
+                 onClick={() => setViewMode('table')}
+               >
+                 <Table className="h-4 w-4 mr-1" />
+                 테이블
+               </Button>
+             </div>
            </div>
           
           <Button onClick={fetchTrendingVideos} disabled={loading} className="w-full">
@@ -293,9 +315,115 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
         </Card>
       )}
 
-      {/* 트렌딩 비디오 목록 */}
-      <div className="grid gap-4">
-        {sortedVideos.map((video, index) => (
+       {/* 트렌딩 비디오 목록 */}
+       {viewMode === 'table' ? (
+         /* 테이블 뷰 */
+         <div className="overflow-x-auto">
+           <table className="w-full border-collapse border border-gray-300">
+             <thead>
+               <tr className="bg-gray-50">
+                 <th className="border border-gray-300 px-4 py-2 text-left">썸네일</th>
+                 <th className="border border-gray-300 px-4 py-2 text-left">제목</th>
+                 <th className="border border-gray-300 px-4 py-2 text-left">채널</th>
+                 <th className="border border-gray-300 px-4 py-2 text-center">조회수</th>
+                 <th className="border border-gray-300 px-4 py-2 text-center">좋아요</th>
+                 <th className="border border-gray-300 px-4 py-2 text-center">댓글</th>
+                 <th className="border border-gray-300 px-4 py-2 text-center">알고리즘 스코어</th>
+                 <th className="border border-gray-300 px-4 py-2 text-center">트렌드 점수</th>
+                 <th className="border border-gray-300 px-4 py-2 text-center">업로드</th>
+               </tr>
+             </thead>
+             <tbody>
+               {sortedVideos.map((video, index) => (
+                 <tr key={video.id} className="hover:bg-gray-50">
+                   <td className="border border-gray-300 px-4 py-2">
+                     <img
+                       src={video.thumbnails?.medium?.url || video.thumbnails?.default?.url}
+                       alt={video.title}
+                       className="w-20 h-15 object-cover rounded"
+                     />
+                   </td>
+                   <td className="border border-gray-300 px-4 py-2">
+                     <div className="max-w-xs">
+                       <h3 className="font-semibold text-sm line-clamp-2 mb-1">
+                         {video.title}
+                       </h3>
+                       {video.tags && video.tags.length > 0 && (
+                         <div className="flex flex-wrap gap-1">
+                           {video.tags.slice(0, 3).map((tag, tagIndex) => (
+                             <span
+                               key={tagIndex}
+                               className="px-1 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
+                             >
+                               #{tag}
+                             </span>
+                           ))}
+                         </div>
+                       )}
+                     </div>
+                   </td>
+                   <td className="border border-gray-300 px-4 py-2 text-sm">
+                     {video.channelTitle}
+                   </td>
+                   <td className="border border-gray-300 px-4 py-2 text-center text-sm">
+                     {formatNumber(video.viewCount)}
+                   </td>
+                   <td className="border border-gray-300 px-4 py-2 text-center text-sm">
+                     {formatNumber(video.likeCount)}
+                   </td>
+                   <td className="border border-gray-300 px-4 py-2 text-center text-sm">
+                     {formatNumber(video.commentCount)}
+                   </td>
+                   <td className="border border-gray-300 px-4 py-2 text-center">
+                     {video.algorithmScore !== undefined ? (
+                       <div className="flex flex-col items-center gap-1">
+                         <div className="w-16 bg-gray-200 rounded-full h-2">
+                           <div
+                             className={`h-2 rounded-full ${
+                               video.algorithmScore >= 80 ? 'bg-green-500' :
+                               video.algorithmScore >= 60 ? 'bg-yellow-500' :
+                               video.algorithmScore >= 40 ? 'bg-orange-500' : 'bg-red-500'
+                             }`}
+                             style={{ width: `${Math.min(video.algorithmScore, 100)}%` }}
+                           />
+                         </div>
+                         <span className="text-xs font-semibold">
+                           {video.algorithmScore.toFixed(1)}
+                         </span>
+                       </div>
+                     ) : (
+                       <span className="text-xs text-gray-400">-</span>
+                     )}
+                   </td>
+                   <td className="border border-gray-300 px-4 py-2 text-center">
+                     {video.trendScore !== undefined ? (
+                       <div className="flex flex-col items-center gap-1">
+                         <div className="w-16 bg-gray-200 rounded-full h-2">
+                           <div
+                             className="bg-blue-500 h-2 rounded-full"
+                             style={{ width: `${Math.min((video.trendScore / 100) * 100, 100)}%` }}
+                           />
+                         </div>
+                         <span className="text-xs text-gray-600">
+                           {video.trendScore.toFixed(1)}
+                         </span>
+                       </div>
+                     ) : (
+                       <span className="text-xs text-gray-400">-</span>
+                     )}
+                   </td>
+                   <td className="border border-gray-300 px-4 py-2 text-center text-sm">
+                     {formatDate(video.publishedAt)}
+                   </td>
+                 </tr>
+               ))}
+             </tbody>
+           </table>
+         </div>
+       ) : (
+         /* 카드 뷰 */
+         <div className="grid gap-4">
+           {sortedVideos.map((video, index) => (
           <Card key={video.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex gap-4">
@@ -399,16 +527,17 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+           ))}
+         </div>
+       )}
 
-      {sortedVideos.length === 0 && !loading && !error && (
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <p className="text-gray-500">트렌딩 비디오가 없습니다.</p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+       {sortedVideos.length === 0 && !loading && !error && (
+         <Card>
+           <CardContent className="pt-6 text-center">
+             <p className="text-gray-500">트렌딩 비디오가 없습니다.</p>
+           </CardContent>
+         </Card>
+       )}
+     </div>
   );
 }
