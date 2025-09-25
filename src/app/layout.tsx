@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Speranza - AI YouTube 콘텐츠 어시스턴트",
   description: "YouTube 트렌드를 분석하고 AI가 맞춤형 콘텐츠 아이디어를 생성해드립니다.",
+  verification: {
+    google: "7cfgmgyX_ZoyaB4IC2yeyPA5zU-72jKOcGQQWz32Z9Q",
+  },
 };
 
 export default function RootLayout({
