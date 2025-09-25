@@ -172,7 +172,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
     }
   };
 
-  // 동영상 타입 판별 함수 (쇼츠: 2분 미만, 롱폼: 2분 이상)
+  // 동영상 타입 판별 함수 (숏폼: 4분 미만, 롱폼: 4분 이상)
   const getVideoType = (duration: string): { type: 'shorts' | 'longform', label: string, color: string } => {
     if (!duration) return { type: 'longform', label: '롱폼', color: 'bg-blue-100 text-blue-800' };
     
@@ -185,8 +185,8 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
     
     const totalSeconds = hours * 3600 + minutes * 60 + seconds;
     
-    if (totalSeconds < 120) { // 2분 미만
-      return { type: 'shorts', label: '쇼츠', color: 'bg-red-100 text-red-800' };
+    if (totalSeconds < 240) { // 4분 미만
+      return { type: 'shorts', label: '숏폼', color: 'bg-red-100 text-red-800' };
     } else {
       return { type: 'longform', label: '롱폼', color: 'bg-blue-100 text-blue-800' };
     }
@@ -284,7 +284,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                   onClick={() => setSelectedVideoType('shorts')}
                   className="bg-red-100 text-red-800 hover:bg-red-200 data-[state=active]:bg-red-600 data-[state=active]:text-white"
                 >
-                  쇼츠
+                  숏폼
                 </Button>
                 <Button
                   variant={selectedVideoType === 'longform' ? 'default' : 'outline'}
@@ -385,9 +385,9 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
       )}
 
       {/* 분석 대시보드 표 */}
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-black">
             <TrendingUp className="h-5 w-5" />
             분석 대시보드
           </CardTitle>
@@ -400,16 +400,16 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left p-3 font-semibold">썸네일</th>
-                  <th className="text-left p-3 font-semibold">제목</th>
-                  <th className="text-left p-3 font-semibold">채널</th>
-                  <th className="text-left p-3 font-semibold">길이/타입</th>
-                  <th className="text-left p-3 font-semibold">조회수</th>
-                  <th className="text-left p-3 font-semibold">좋아요</th>
-                  <th className="text-left p-3 font-semibold">댓글</th>
-                  <th className="text-left p-3 font-semibold">업로드</th>
-                  <th className="text-left p-3 font-semibold">🧠 알고리즘</th>
-                  <th className="text-left p-3 font-semibold">📈 트렌드</th>
+                  <th className="text-left p-3 font-semibold text-black">썸네일</th>
+                  <th className="text-left p-3 font-semibold text-black">제목</th>
+                  <th className="text-left p-3 font-semibold text-black">채널</th>
+                  <th className="text-left p-3 font-semibold text-black">길이/타입</th>
+                  <th className="text-left p-3 font-semibold text-black">조회수</th>
+                  <th className="text-left p-3 font-semibold text-black">좋아요</th>
+                  <th className="text-left p-3 font-semibold text-black">댓글</th>
+                  <th className="text-left p-3 font-semibold text-black">업로드</th>
+                  <th className="text-left p-3 font-semibold text-black">🧠 알고리즘</th>
+                  <th className="text-left p-3 font-semibold text-black">📈 트렌드</th>
                 </tr>
               </thead>
               <tbody>
@@ -458,7 +458,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                     
                     {/* 조회수 */}
                     <td className="p-3">
-                      <div className="flex items-center gap-1 text-sm">
+                      <div className="flex items-center gap-1 text-sm text-black">
                         <Eye className="h-4 w-4 text-gray-500" />
                         {formatNumber(video.viewCount)}
                       </div>
@@ -466,7 +466,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                     
                     {/* 좋아요 */}
                     <td className="p-3">
-                      <div className="flex items-center gap-1 text-sm">
+                      <div className="flex items-center gap-1 text-sm text-black">
                         <Heart className="h-4 w-4 text-gray-500" />
                         {formatNumber(video.likeCount)}
                       </div>
@@ -474,7 +474,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                     
                     {/* 댓글 */}
                     <td className="p-3">
-                      <div className="flex items-center gap-1 text-sm">
+                      <div className="flex items-center gap-1 text-sm text-black">
                         <MessageCircle className="h-4 w-4 text-gray-500" />
                         {formatNumber(video.commentCount)}
                       </div>
@@ -482,7 +482,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                     
                     {/* 업로드 시간 */}
                     <td className="p-3">
-                      <div className="flex items-center gap-1 text-sm">
+                      <div className="flex items-center gap-1 text-sm text-black">
                         <Clock className="h-4 w-4 text-gray-500" />
                         {formatDate(video.publishedAt)}
                       </div>
@@ -502,7 +502,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                               style={{ width: `${Math.min(video.algorithmScore, 100)}%` }}
                             />
                           </div>
-                          <span className="text-xs font-semibold min-w-[3rem]">
+                          <span className="text-xs font-semibold min-w-[3rem] text-black">
                             {video.algorithmScore.toFixed(1)}
                           </span>
                         </div>
@@ -525,7 +525,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                               style={{ width: `${Math.min(video.trendScore, 100)}%` }}
                             />
                           </div>
-                          <span className="text-xs font-semibold min-w-[3rem]">
+                          <span className="text-xs font-semibold min-w-[3rem] text-black">
                             {video.trendScore.toFixed(1)}
                           </span>
                         </div>
