@@ -60,7 +60,7 @@ export class YouTubeClient {
 
   // 카테고리별 트렌드 분석
   async getTrendingByCategory(categoryId: string, regionCode: string = 'KR') {
-    return this.getTrendingVideos(regionCode, 25, categoryId);
+    return this.getTrendingVideos(regionCode, 100, categoryId);
   }
 }
 
@@ -116,7 +116,7 @@ export class TrendAnalyzer {
     return categoryStats;
   }
 
-  // 트렌드 점수 계산
+  // 트렌드 점수 계산 (0-100 범위로 정규화)
   static calculateTrendScore(video: any): number {
     const viewCount = video.viewCount || 0;
     const likeCount = video.likeCount || 0;
@@ -129,10 +129,21 @@ export class TrendAnalyzer {
     const timeWeight = Math.max(0, 1 - (hoursSincePublished / 168)); // 1주일 기준
 
     // 참여도 점수 (좋아요 + 댓글)
-    const engagementScore = (likeCount + commentCount * 2) / Math.max(viewCount, 1);
+    const engagementRate = (likeCount + commentCount * 2) / Math.max(viewCount, 1);
 
-    // 최종 트렌드 점수
-    return (viewCount * timeWeight * (1 + engagementScore)) / 1000000;
+    // 1. 조회수 점수 (0-50점)
+    const viewScore = Math.min(50, (viewCount / 1000000) * 50);
+
+    // 2. 참여도 점수 (0-30점)
+    const engagementScore = Math.min(30, engagementRate * 1000 * 30);
+
+    // 3. 시간 신선도 점수 (0-20점)
+    const freshnessScore = Math.max(0, 20 * timeWeight);
+
+    // 총점 계산 (0-100점)
+    const totalScore = viewScore + engagementScore + freshnessScore;
+    
+    return Math.min(100, Math.max(0, totalScore));
   }
 
   // YouTube 알고리즘 스코어 계산

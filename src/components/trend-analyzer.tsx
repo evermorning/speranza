@@ -24,6 +24,7 @@ interface VideoData {
   tags: string[];
   trendScore?: number;
   algorithmScore?: number;
+  duration?: string;
 }
 
 export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAnalyzerProps) {
@@ -32,6 +33,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedVideoType, setSelectedVideoType] = useState<'all' | 'shorts' | 'longform'>('all');
   const [popularKeywords, setPopularKeywords] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'trend' | 'views' | 'likes' | 'comments' | 'algorithm'>('views');
 
@@ -61,13 +63,21 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
       let videos: VideoData[] = [];
       
       if (selectedCategory === 'all') {
-        videos = await youtubeAPI.getTrendingVideos('KR', 50);
+        videos = await youtubeAPI.getTrendingVideos('KR', 100);
       } else {
         videos = await youtubeAPI.getTrendingByCategory(selectedCategory, 'KR');
       }
       
-      // 트렌드 점수 계산
-      const videosWithScore = TrendAnalyzer.getTopTrendingVideos(videos, 20);
+      // 트렌드 점수 계산 (더 많은 데이터에서 계산)
+      const videosWithScore = TrendAnalyzer.getTopTrendingVideos(videos, 50);
+      
+      // 디버깅: 트렌드 점수 확인
+      console.log('트렌드 점수 계산 결과:', videosWithScore.map(v => ({
+        title: v.title.substring(0, 30),
+        trendScore: v.trendScore,
+        algorithmScore: v.algorithmScore,
+        viewCount: v.viewCount
+      })));
       
       // 조회수 기준으로 정렬 (기본값)
       const sortedVideos = videosWithScore.sort((a, b) => b.viewCount - a.viewCount);
@@ -97,8 +107,8 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
     setError(null);
     
     try {
-      const videos = await youtubeAPI.searchVideos(searchQuery, 25);
-      const videosWithScore = TrendAnalyzer.getTopTrendingVideos(videos);
+      const videos = await youtubeAPI.searchVideos(searchQuery, 100);
+      const videosWithScore = TrendAnalyzer.getTopTrendingVideos(videos, 50);
       
       // 조회수 기준으로 정렬 (기본값)
       const sortedVideos = videosWithScore.sort((a, b) => b.viewCount - a.viewCount);
@@ -144,6 +154,44 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
     }
   };
 
+  // YouTube duration 파싱 함수 (PT4M13S -> 4:13)
+  const parseDuration = (duration: string): string => {
+    if (!duration) return '0:00';
+    
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!match) return '0:00';
+    
+    const hours = parseInt(match[1] || '0');
+    const minutes = parseInt(match[2] || '0');
+    const seconds = parseInt(match[3] || '0');
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+  };
+
+  // 동영상 타입 판별 함수 (쇼츠: 2분 미만, 롱폼: 2분 이상)
+  const getVideoType = (duration: string): { type: 'shorts' | 'longform', label: string, color: string } => {
+    if (!duration) return { type: 'longform', label: '롱폼', color: 'bg-blue-100 text-blue-800' };
+    
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!match) return { type: 'longform', label: '롱폼', color: 'bg-blue-100 text-blue-800' };
+    
+    const hours = parseInt(match[1] || '0');
+    const minutes = parseInt(match[2] || '0');
+    const seconds = parseInt(match[3] || '0');
+    
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+    
+    if (totalSeconds < 120) { // 2분 미만
+      return { type: 'shorts', label: '쇼츠', color: 'bg-red-100 text-red-800' };
+    } else {
+      return { type: 'longform', label: '롱폼', color: 'bg-blue-100 text-blue-800' };
+    }
+  };
+
   // 정렬 함수
   const sortVideos = (videos: VideoData[], sortType: string) => {
     const sortedVideos = [...videos];
@@ -164,8 +212,19 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
     }
   };
 
-  // 정렬된 비디오 목록
-  const sortedVideos = sortVideos(trendingVideos, sortBy);
+  // 비디오 타입별 필터링
+  const filteredVideos = trendingVideos.filter(video => {
+    if (selectedVideoType === 'all') return true;
+    
+    const videoType = getVideoType(video.duration || '');
+    return videoType.type === selectedVideoType;
+  });
+
+  // 디버깅: 필터링 결과 확인
+  console.log(`필터링 결과: 전체 ${trendingVideos.length}개 → ${selectedVideoType} ${filteredVideos.length}개`);
+
+  // 정렬된 비디오 목록 (최대 7개)
+  const sortedVideos = sortVideos(filteredVideos, sortBy).slice(0, 7);
 
   return (
     <div className="space-y-6">
@@ -194,17 +253,49 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
             </Button>
           </div>
           
-          <div className="flex gap-2 flex-wrap">
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedCategory(category.id)}
-              >
-                {category.name}
-              </Button>
-            ))}
+          <div className="space-y-3">
+            <div className="flex gap-2 flex-wrap">
+              {categories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category.id)}
+                >
+                  {category.name}
+                </Button>
+              ))}
+            </div>
+            
+            {/* 비디오 타입 필터 */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-300">동영상 타입:</span>
+              <div className="flex gap-2">
+                <Button
+                  variant={selectedVideoType === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedVideoType('all')}
+                >
+                  전체
+                </Button>
+                <Button
+                  variant={selectedVideoType === 'shorts' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedVideoType('shorts')}
+                  className="bg-red-100 text-red-800 hover:bg-red-200 data-[state=active]:bg-red-600 data-[state=active]:text-white"
+                >
+                  쇼츠
+                </Button>
+                <Button
+                  variant={selectedVideoType === 'longform' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedVideoType('longform')}
+                  className="bg-blue-100 text-blue-800 hover:bg-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                >
+                  롱폼
+                </Button>
+              </div>
+            </div>
           </div>
           
            {/* 정렬 옵션 */}
@@ -312,6 +403,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                   <th className="text-left p-3 font-semibold">썸네일</th>
                   <th className="text-left p-3 font-semibold">제목</th>
                   <th className="text-left p-3 font-semibold">채널</th>
+                  <th className="text-left p-3 font-semibold">길이/타입</th>
                   <th className="text-left p-3 font-semibold">조회수</th>
                   <th className="text-left p-3 font-semibold">좋아요</th>
                   <th className="text-left p-3 font-semibold">댓글</th>
@@ -334,15 +426,33 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                     
                     {/* 제목 */}
                     <td className="p-3 max-w-xs">
-                      <div className="font-medium text-sm line-clamp-2" title={video.title}>
+                      <a 
+                        href={`https://www.youtube.com/watch?v=${video.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-sm line-clamp-2 text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                        title={video.title}
+                      >
                         {video.title}
-                      </div>
+                      </a>
                     </td>
                     
                     {/* 채널 */}
                     <td className="p-3">
                       <div className="text-sm text-gray-600" title={video.channelTitle}>
                         {video.channelTitle}
+                      </div>
+                    </td>
+                    
+                    {/* 길이/타입 */}
+                    <td className="p-3">
+                      <div className="space-y-1">
+                        <div className="text-sm font-medium text-gray-900">
+                          {parseDuration(video.duration || '')}
+                        </div>
+                        <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getVideoType(video.duration || '').color}`}>
+                          {getVideoType(video.duration || '').label}
+                        </div>
                       </div>
                     </td>
                     
@@ -407,11 +517,15 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
                         <div className="flex items-center gap-2">
                           <div className="w-16 bg-gray-200 rounded-full h-2">
                             <div
-                              className="bg-blue-500 h-2 rounded-full"
-                              style={{ width: `${Math.min((video.trendScore / 100) * 100, 100)}%` }}
+                              className={`h-2 rounded-full ${
+                                video.trendScore >= 80 ? 'bg-green-500' :
+                                video.trendScore >= 60 ? 'bg-yellow-500' :
+                                video.trendScore >= 40 ? 'bg-orange-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${Math.min(video.trendScore, 100)}%` }}
                             />
                           </div>
-                          <span className="text-xs text-gray-600 min-w-[3rem]">
+                          <span className="text-xs font-semibold min-w-[3rem]">
                             {video.trendScore.toFixed(1)}
                           </span>
                         </div>

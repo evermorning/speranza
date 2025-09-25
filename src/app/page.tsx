@@ -9,16 +9,11 @@ import {
   Youtube, 
   TrendingUp, 
   Settings, 
-  BarChart3,
-  Sparkles,
-  Target,
-  Calendar
+  Sparkles
 } from 'lucide-react';
 
 export default function Home() {
   const [apiKey, setApiKey] = useState('');
-  const [trendData, setTrendData] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState('trend');
   const [isConfigured, setIsConfigured] = useState(false);
 
   const handleApiKeySubmit = () => {
@@ -38,10 +33,6 @@ export default function Home() {
     }
   }, []);
 
-  const tabs = [
-    { id: 'trend', label: '트렌드 분석', icon: TrendingUp },
-    { id: 'analytics', label: '분석 대시보드', icon: BarChart3 },
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
@@ -146,100 +137,15 @@ export default function Home() {
 
 
 
-                <Card className="hover:shadow-lg transition-shadow bg-gray-800 border-gray-700">
-                  <CardHeader>
-                    <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
-                      <Target className="h-6 w-6 text-white" />
-                    </div>
-                    <CardTitle className="text-white">성과 예측</CardTitle>
-                    <CardDescription className="text-gray-300">
-                      콘텐츠 아이디어의 예상 성과를 분석하고 개선 방안을 제시합니다
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
               </div>
             </div>
 
-            {/* 탭 네비게이션 */}
-            <div className="mb-6">
-              <div className="border-b border-gray-600">
-                <nav className="-mb-px flex space-x-8">
-                  {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                          activeTab === tab.id
-                            ? 'border-blue-500 text-blue-400'
-                            : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-500'
-                        }`}
-                      >
-                        <Icon className="h-4 w-4" />
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </nav>
-              </div>
-            </div>
 
-            {/* 탭 콘텐츠 */}
+            {/* 트렌드 분석 컴포넌트 */}
             <div className="space-y-6">
-              {activeTab === 'trend' && (
-                <TrendAnalyzerComponent 
-                  apiKey={apiKey} 
-                  onDataUpdate={(videos) => setTrendData(videos)} 
-                />
-              )}
-              
-              
-              {activeTab === 'analytics' && (
-                <div className="space-y-6">
-                  <Card className="bg-gray-800 border-gray-700">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-white">
-                        <BarChart3 className="h-5 w-5" />
-                        분석 대시보드
-                      </CardTitle>
-                      <CardDescription className="text-gray-300">
-                        트렌딩 비디오의 상세 분석 데이터를 확인하세요
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="relative overflow-x-auto">
-                        <table className="w-full text-sm text-left text-gray-300">
-                          <thead className="text-xs uppercase bg-gray-700">
-                            <tr>
-                              <th scope="col" className="px-6 py-3">동영상 제목</th>
-                              <th scope="col" className="px-6 py-3">채널명</th>
-                              <th scope="col" className="px-6 py-3">조회수</th>
-                              <th scope="col" className="px-6 py-3">게시일</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {trendData.map((video: any) => (
-                              <tr key={video.id} className="border-b border-gray-700 hover:bg-gray-700">
-                                <td className="px-6 py-4 font-medium">
-                                  <div className="line-clamp-1">{video.title}</div>
-                                </td>
-                                <td className="px-6 py-4">{video.channelTitle}</td>
-                                <td className="px-6 py-4">
-                                  {video.viewCount ? (video.viewCount / 10000).toFixed(1) + '만' : '0'}
-                                </td>
-                                <td className="px-6 py-4">
-                                  {new Date(video.publishedAt).toLocaleDateString()}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
+              <TrendAnalyzerComponent 
+                apiKey={apiKey} 
+              />
             </div>
           </>
         )}

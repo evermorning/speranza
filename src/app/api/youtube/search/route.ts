@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     const videoIds = data.items?.map((item: any) => item.id.videoId) || [];
     
-    // Fetch video statistics
-    const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoIds.join(',')}&key=${apiKey}`;
+    // Fetch video statistics and content details
+    const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet,contentDetails&id=${videoIds.join(',')}&key=${apiKey}`;
     const statsResponse = await fetch(statsUrl);
     const statsData = await statsResponse.json();
 
@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
       viewCount: parseInt(item.statistics.viewCount) || 0,
       likeCount: parseInt(item.statistics.likeCount) || 0,
       commentCount: parseInt(item.statistics.commentCount) || 0,
+      duration: item.contentDetails.duration,
     })) || [];
 
     return NextResponse.json({ videos });
