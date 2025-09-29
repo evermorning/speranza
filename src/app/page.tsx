@@ -341,7 +341,7 @@ export default function Home() {
                     <div className="ml-auto">
                       <Button 
                         size="sm" 
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        className="bg-violet-600 hover:bg-violet-700 text-white"
                         onClick={() => setIsConfigured(false)}
                       >
                         API 키 변경
