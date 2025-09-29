@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { userDb } from '@/lib/supabase';
 
 const handler = NextAuth({
-  secret: 'speranza-development-secret-key-2024-v3-fixed',
+  secret: process.env.NEXTAUTH_SECRET || 'speranza-development-secret-key-2024-v3-fixed',
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -20,7 +20,7 @@ const handler = NextAuth({
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: false, // 개발 환경에서는 false
+        secure: process.env.NODE_ENV === 'production',
       },
     },
   },
