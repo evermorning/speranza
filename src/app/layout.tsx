@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   verification: {
     google: "7cfgmgyX_ZoyaB4IC2yeyPA5zU-72jKOcGQQWz32Z9Q",
   },
+  other: {
+    'rss': '/feed.xml',
+  },
 };
 
 import Provider from "./providers";
