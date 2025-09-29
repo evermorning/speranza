@@ -155,7 +155,7 @@ export default function Home() {
                     variant="outline"
                     size="sm"
                     onClick={() => signOut()}
-                    className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
+                    className="bg-green-500 text-white border-green-500 hover:bg-green-600 hover:border-green-600"
                   >
                     로그아웃
                   </Button>
