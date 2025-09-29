@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description: "YouTube 트렌드를 분석하고 AI가 맞춤형 콘텐츠 아이디어를 생성해드립니다.",
   verification: {
     google: "7cfgmgyX_ZoyaB4IC2yeyPA5zU-72jKOcGQQWz32Z9Q",
+    other: {
+      "naver-site-verification": "1788b4b084fd5d45eaa10a4208a2a3610c422bda",
+    },
   },
   other: {
     'rss': '/feed.xml',
