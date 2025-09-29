@@ -126,6 +126,17 @@ export default function Home() {
                   <span className="text-sm text-gray-300">
                     {session.user.name}
                   </span>
+                  {/* 관리자 패널 버튼 - 상단 헤더에 배치 */}
+                  {session.user.role === 'admin' && (
+                    <Link href="/admin">
+                      <Button 
+                        size="sm" 
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                      >
+                        👑 관리자 패널
+                      </Button>
+                    </Link>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -313,17 +324,7 @@ export default function Home() {
                         계정에 저장된 API 키로 트렌드 분석을 이용 중입니다.
                       </p>
                     </div>
-                    <div className="ml-auto flex items-center gap-2">
-                      {session.user.role === 'admin' && (
-                        <Link href="/admin">
-                          <Button 
-                            size="sm" 
-                            className="bg-yellow-600 hover:bg-yellow-700 text-white"
-                          >
-                            👑 관리자 패널
-                          </Button>
-                        </Link>
-                      )}
+                    <div className="ml-auto">
                       <Button 
                         size="sm" 
                         className="bg-green-600 hover:bg-green-700 text-white"
