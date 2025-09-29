@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const apiKey = (user as any).youtube_api_key;
+    const apiKey = user.image; // image 필드에 API 키 저장
 
     if (!apiKey) {
       return NextResponse.json({

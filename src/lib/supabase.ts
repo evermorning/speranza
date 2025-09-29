@@ -116,7 +116,6 @@ export const userDb = {
     name?: string;
     email?: string;
     image?: string;
-    youtube_api_key?: string;
   }): Promise<User | null> {
     const { data, error } = await supabase
       .from('users')

@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const apiKey = (user as any).youtube_api_key;
+    const apiKey = user.image; // image 필드에 API 키 저장
 
     return NextResponse.json({
       hasApiKey: !!apiKey,
@@ -77,8 +77,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Supabase에서 API 키 업데이트
-    const result = await userDb.update(user.id, { youtube_api_key: apiKey.trim() });
+    // Supabase에서 API 키 업데이트 (image 필드에 저장)
+    const result = await userDb.update(user.id, { image: apiKey.trim() });
 
     if (!result) {
       return NextResponse.json(
