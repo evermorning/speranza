@@ -96,7 +96,7 @@ export const userDb = {
   async findAll(): Promise<User[]> {
     const { data, error } = await supabase
       .from('users')
-      .select('id, email, name, provider, image, role, created_at, updated_at');
+      .select('id, email, name, provider, image, created_at, updated_at');
 
     if (error) {
       throw new Error(`사용자 목록 조회 실패: ${error.message}`);
@@ -105,7 +105,7 @@ export const userDb = {
     // role이 없는 사용자들에게 동적으로 role 설정
     const usersWithRoles = (data || []).map(user => ({
       ...user,
-      role: user.role || (user.email === 'kwanwoo5@naver.com' ? 'admin' : 'user')
+      role: user.email === 'kwanwoo5@naver.com' ? 'admin' : 'user'
     }));
 
     return usersWithRoles as User[];
