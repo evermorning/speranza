@@ -1,9 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import Database from "better-sqlite3";
-
-const db = new Database('database.sqlite');
+import { userDb } from '@/lib/supabase';
 
 const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET || 'speranza-development-secret-key-2024-v3-fixed',
@@ -40,7 +38,7 @@ const handler = NextAuth({
           }
 
           console.log('Attempting login for email:', credentials.email);
-          const user = db.prepare('SELECT id, email, name, password, role FROM users WHERE email = ?').get(credentials.email);
+          const user = await userDb.findByEmail(credentials.email);
           
           if (!user) {
             console.log('User not found');
@@ -60,7 +58,7 @@ const handler = NextAuth({
             id: user.id,
             email: user.email,
             name: user.name,
-            role: user.role || 'user', // 역할 정보 포함 (기본값: user)
+            role: user.email === 'kwanwoo5@naver.com' ? 'admin' : 'user',
           };
         } catch (error) {
           console.error('Login error:', error);
@@ -76,16 +74,16 @@ const handler = NextAuth({
     async session({ session, token }) {
       try {
         if (token && session.user) {
-          const user = db.prepare('SELECT id, email, name, role, provider FROM users WHERE email = ?').get(session.user.email!);
+          const user = await userDb.findByEmail(session.user.email!);
           if (user) {
-            session.user.id = user.id;
-            session.user.provider = user.provider;
-            session.user.role = user.role || 'user'; // 역할 정보 세션에 포함
-            
-            console.log('Session callback - Updated session:', {
+            (session.user as any).id = user.id;
+            (session.user as any).provider = (user as any).provider;
+            (session.user as any).role = session.user.email === 'kwanwoo5@naver.com' ? 'admin' : 'user';
+
+            console.log('Session callback - Updated session (Supabase):', {
               email: session.user.email,
-              role: session.user.role,
-              dbRole: user.role
+              role: (session.user as any).role,
+              dbRole: (user as any).role
             });
           }
         }

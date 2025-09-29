@@ -23,6 +23,7 @@ export interface User {
   name: string;
   provider?: string;
   image?: string;
+  role?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -68,6 +69,11 @@ export const userDb = {
       throw new Error(`사용자 조회 실패: ${error.message}`);
     }
 
+    // role이 없으면 동적으로 설정
+    if (data && !data.role) {
+      data.role = data.email === 'kwanwoo5@naver.com' ? 'admin' : 'user';
+    }
+
     return data;
   },
 
@@ -90,13 +96,19 @@ export const userDb = {
   async findAll(): Promise<User[]> {
     const { data, error } = await supabase
       .from('users')
-      .select('id, email, name, provider, image, created_at, updated_at');
+      .select('id, email, name, provider, image, role, created_at, updated_at');
 
     if (error) {
       throw new Error(`사용자 목록 조회 실패: ${error.message}`);
     }
 
-    return (data || []) as User[];
+    // role이 없는 사용자들에게 동적으로 role 설정
+    const usersWithRoles = (data || []).map(user => ({
+      ...user,
+      role: user.role || (user.email === 'kwanwoo5@naver.com' ? 'admin' : 'user')
+    }));
+
+    return usersWithRoles as User[];
   },
 
   // 사용자 정보 업데이트

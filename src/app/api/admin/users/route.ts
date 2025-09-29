@@ -1,10 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import Database from 'better-sqlite3';
-import path from 'path';
-// import { isAdmin, createUnauthorizedError, createUnauthenticatedError } from '@/lib/auth';
+import { userDb } from '@/lib/supabase';
 
-const db = new Database(path.join(process.cwd(), 'database.sqlite'));
+// Auth helper functions
+function createUnauthenticatedError() {
+  return NextResponse.json(
+    { error: '인증이 필요합니다' },
+    { status: 401 }
+  );
+}
+
+function createUnauthorizedError(message: string = '권한이 없습니다') {
+  return NextResponse.json(
+    { error: message },
+    { status: 403 }
+  );
+}
+
+function isAdmin(session: any): boolean {
+  return session?.user?.role === 'admin' || session?.user?.email === 'kwanwoo5@naver.com';
+}
 
 // 모든 사용자 조회 (관리자 전용)
 export async function GET(request: NextRequest) {
@@ -23,22 +38,14 @@ export async function GET(request: NextRequest) {
       return createUnauthorizedError('관리자 권한이 필요합니다');
     }
 
-    // 모든 사용자 조회
-    const users = db.prepare(`
-      SELECT 
-        id, email, name, role, provider, created_at, updated_at,
-        CASE WHEN youtube_api_key IS NOT NULL AND youtube_api_key != '' THEN 1 ELSE 0 END as hasApiKey
-      FROM users 
-      ORDER BY 
-        CASE WHEN role = 'admin' THEN 0 ELSE 1 END,
-        created_at DESC
-    `).all();
+    // 모든 사용자 조회 (Supabase 사용)
+    const users = await userDb.findAll();
 
     // 통계 정보 계산
     const stats = {
       totalUsers: users.length,
-      adminCount: users.filter((user: any) => user.role === 'admin').length,
-      usersWithApiKeys: users.filter((user: any) => user.hasApiKey).length,
+      adminCount: users.filter((user: any) => user.role === 'admin' || user.email === 'kwanwoo5@naver.com').length,
+      usersWithApiKeys: users.filter((user: any) => user.youtube_api_key).length,
     };
 
     return NextResponse.json(

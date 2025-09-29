@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import Database from "better-sqlite3";
-
-const db = new Database('database.sqlite');
+import { userDb } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 이메일 중복 검사
-    const existingUser = db.prepare('SELECT id, email FROM users WHERE email = ?').get(email);
+    const existingUser = await userDb.findByEmail(email);
     if (existingUser) {
       return NextResponse.json(
         { error: '이미 사용 중인 이메일입니다.' },
@@ -46,20 +44,12 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 새 사용자 생성
-    const insertUser = db.prepare(`
-      INSERT INTO users (name, email, password, provider, role, created_at, updated_at) 
-      VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-    `);
-    
-    const result = insertUser.run(name, email, hashedPassword, 'credentials', 'user');
-    
-    const newUser = {
-      id: result.lastInsertRowid,
+    const newUser = await userDb.create({
       name,
       email,
-      provider: 'credentials',
-      role: 'user'
-    };
+      password: hashedPassword,
+      provider: 'credentials'
+    });
 
     return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
