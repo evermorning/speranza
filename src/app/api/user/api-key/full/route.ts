@@ -1,15 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Database from 'better-sqlite3';
-import path from 'path';
-
-const db = new Database(path.join(process.cwd(), 'database.sqlite'));
-
-// 사용자 API 키 조회
-function getUserApiKey(userId: number) {
-  const stmt = db.prepare('SELECT youtube_api_key FROM users WHERE id = ?');
-  const result = stmt.get(userId) as { youtube_api_key?: string } | undefined;
-  return result?.youtube_api_key || null;
-}
+import { userDb } from '@/lib/supabase';
 
 // GET: 사용자의 전체 API 키 조회 (로그인한 사용자만)
 export async function GET(request: NextRequest) {
@@ -24,9 +14,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 사용자 ID 조회
-    const userStmt = db.prepare('SELECT id FROM users WHERE email = ?');
-    const user = userStmt.get(userEmail) as { id: number } | undefined;
+    // Supabase에서 사용자 조회
+    const user = await userDb.findByEmail(userEmail);
     
     if (!user) {
       return NextResponse.json(
@@ -35,7 +24,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const apiKey = getUserApiKey(user.id);
+    const apiKey = (user as any).youtube_api_key;
 
     if (!apiKey) {
       return NextResponse.json({

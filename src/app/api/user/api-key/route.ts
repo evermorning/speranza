@@ -1,37 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Database from 'better-sqlite3';
-import path from 'path';
-
-const db = new Database(path.join(process.cwd(), 'database.sqlite'));
-
-// 사용자 API 키 조회
-function getUserApiKey(userId: number) {
-  const stmt = db.prepare('SELECT youtube_api_key FROM users WHERE id = ?');
-  const result = stmt.get(userId) as { youtube_api_key?: string } | undefined;
-  return result?.youtube_api_key || null;
-}
-
-// 사용자 API 키 업데이트
-function updateUserApiKey(userId: number, apiKey: string) {
-  const stmt = db.prepare('UPDATE users SET youtube_api_key = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
-  return stmt.run(apiKey, userId);
-}
+import { userDb } from '@/lib/supabase';
 
 // GET: 사용자 API 키 조회
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const { searchParams } = new URL(request.url);
+    const userEmail = searchParams.get('email');
     
-    if (!session?.user?.email) {
+    if (!userEmail) {
       return NextResponse.json(
         { error: '인증이 필요합니다' },
         { status: 401 }
       );
     }
 
-    // 사용자 ID 조회
-    const userStmt = db.prepare('SELECT id FROM users WHERE email = ?');
-    const user = userStmt.get(session.user.email) as { id: string } | undefined;
+    // Supabase에서 사용자 조회
+    const user = await userDb.findByEmail(userEmail);
     
     if (!user) {
       return NextResponse.json(
@@ -40,7 +24,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const apiKey = getUserApiKey(user.id);
+    const apiKey = (user as any).youtube_api_key;
 
     return NextResponse.json({
       hasApiKey: !!apiKey,
@@ -83,9 +67,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 사용자 ID 조회
-    const userStmt = db.prepare('SELECT id FROM users WHERE email = ?');
-    const user = userStmt.get(userEmail) as { id: number } | undefined;
+    // Supabase에서 사용자 조회
+    const user = await userDb.findByEmail(userEmail);
     
     if (!user) {
       return NextResponse.json(
@@ -94,10 +77,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // API 키 업데이트
-    const result = updateUserApiKey(user.id, apiKey.trim());
+    // Supabase에서 API 키 업데이트
+    const result = await userDb.update(user.id, { youtube_api_key: apiKey.trim() });
 
-    if (result.changes === 0) {
+    if (!result) {
       return NextResponse.json(
         { error: 'API 키 업데이트에 실패했습니다' },
         { status: 500 }
