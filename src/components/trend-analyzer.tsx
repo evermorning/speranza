@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { YouTubeClient, TrendAnalyzer } from '@/lib/youtube-client';
 import { TrendingUp, Eye, Heart, MessageCircle, Clock, Tag, Brain } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface TrendAnalyzerProps {
   apiKey: string;
   onDataUpdate?: (videos: VideoData[]) => void;
+  isLoggedIn?: boolean;
 }
 
 interface VideoData {
@@ -27,7 +29,8 @@ interface VideoData {
   duration?: string;
 }
 
-export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAnalyzerProps) {
+export default function TrendAnalyzerComponent({ apiKey, onDataUpdate, isLoggedIn = true }: TrendAnalyzerProps) {
+  const router = useRouter();
   const [trendingVideos, setTrendingVideos] = useState<VideoData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +39,7 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
   const [selectedVideoType, setSelectedVideoType] = useState<'all' | 'shorts' | 'longform'>('all');
   const [popularKeywords, setPopularKeywords] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'trend' | 'views' | 'likes' | 'comments' | 'algorithm'>('views');
+  const [searchCount, setSearchCount] = useState(0);
 
   const categories = [
     { id: 'all', name: '전체' },
@@ -103,6 +107,28 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
   const searchVideos = async () => {
     if (!searchQuery.trim()) return;
     
+    // 검색 횟수 제한 확인
+    if (searchCount >= 3) {
+      setError('일일 검색 횟수 3회를 모두 사용했습니다. 내일 다시 이용해주세요.');
+      return;
+    }
+    
+    // 로그인하지 않은 사용자가 검색을 시도하면 회원가입 페이지로 리다이렉트
+    if (!isLoggedIn) {
+      // 검색 시도 횟수 증가 (로그인하지 않은 경우에도 카운트)
+      const newSearchCount = searchCount + 1;
+      setSearchCount(newSearchCount);
+      localStorage.setItem('search-count', newSearchCount.toString());
+      
+      router.push('/auth/signup');
+      return;
+    }
+    
+    // 검색 횟수 증가 및 저장
+    const newSearchCount = searchCount + 1;
+    setSearchCount(newSearchCount);
+    localStorage.setItem('search-count', newSearchCount.toString());
+    
     setLoading(true);
     setError(null);
     
@@ -131,6 +157,14 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
       fetchTrendingVideos();
     }
   }, [apiKey, selectedCategory]);
+
+  // 컴포넌트 마운트 시 저장된 검색 횟수 불러오기
+  useEffect(() => {
+    const savedSearchCount = localStorage.getItem('search-count');
+    if (savedSearchCount) {
+      setSearchCount(parseInt(savedSearchCount, 10));
+    }
+  }, []);
 
   const formatNumber = (num: number) => {
     if (num >= 10000) {
@@ -231,25 +265,78 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate }: TrendAn
       {/* 검색 및 필터 */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            트렌드 분석
-          </CardTitle>
-          <CardDescription>
-            YouTube 트렌딩 비디오를 분석하여 인기 콘텐츠를 파악하세요
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                트렌드 분석
+              </CardTitle>
+              <CardDescription>
+                YouTube 트렌딩 비디오를 분석하여 인기 콘텐츠를 파악하세요
+              </CardDescription>
+            </div>
+            {isLoggedIn && (
+              <div className="text-right">
+                <div className="flex items-center justify-end gap-2 mb-1">
+                  <div className="text-sm text-gray-500">검색 횟수</div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSearchCount(0);
+                      localStorage.removeItem('search-count');
+                    }}
+                    className="h-6 px-2 text-xs"
+                    title="검색 횟수 초기화"
+                  >
+                    초기화
+                  </Button>
+                </div>
+                <div className="text-2xl font-bold text-blue-600 mb-2">
+                  {searchCount} / 3
+                </div>
+                <div className="w-24 bg-gray-200 rounded-full h-2 mb-1">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      searchCount >= 3 ? 'bg-red-500' : 
+                      searchCount >= 2 ? 'bg-yellow-500' : 'bg-blue-500'
+                    }`}
+                    style={{ width: `${Math.min((searchCount / 3) * 100, 100)}%` }}
+                  />
+                </div>
+                <div className="text-xs text-gray-400">
+                  {searchCount >= 3 ? '한도 초과' : `${3 - searchCount}회 남음`}
+                </div>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-4">
             <Input
-              placeholder="키워드로 검색..."
+              placeholder={
+                searchCount >= 3 
+                  ? "일일 검색 한도에 도달했습니다" 
+                  : isLoggedIn 
+                    ? "키워드로 검색..." 
+                    : "검색하려면 로그인이 필요합니다"
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && searchVideos()}
               className="flex-1"
+              disabled={!isLoggedIn || searchCount >= 3}
             />
-            <Button onClick={searchVideos} disabled={loading}>
-              검색
+            <Button 
+              onClick={searchVideos} 
+              disabled={loading || !isLoggedIn || searchCount >= 3}
+            >
+              {searchCount >= 3 
+                ? '검색 한도 초과' 
+                : isLoggedIn 
+                  ? '검색' 
+                  : '검색 (로그인 필요)'
+              }
             </Button>
           </div>
           

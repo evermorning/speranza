@@ -20,18 +20,22 @@ export const metadata: Metadata = {
   },
 };
 
+import Provider from "./providers";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ko">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        {children}
+        <Provider session={null}>
+          {children}
+        </Provider>
       </body>
     </html>
   );
