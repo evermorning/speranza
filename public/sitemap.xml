@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://speranza.vercel.app/</loc>
-  </url>
-  <url>
-    <loc>https://speranza.vercel.app/auth/signin</loc>
-  </url>
-  <url>
-    <loc>https://speranza.vercel.app/auth/signup</loc>
-  </url>
-  <url>
-    <loc>https://speranza.vercel.app/auth/reset-password</loc>
-  </url>
-  <url>
-    <loc>https://speranza.vercel.app/admin</loc>
-  </url>
+<url>
+<loc>https://speranza.vercel.app/</loc>
+</url>
+<url>
+<loc>https://speranza.vercel.app/auth/signin</loc>
+</url>
+<url>
+<loc>https://speranza.vercel.app/auth/signup</loc>
+</url>
+<url>
+<loc>https://speranza.vercel.app/auth/reset-password</loc>
+</url>
+<url>
+<loc>https://speranza.vercel.app/admin</loc>
+</url>
 </urlset>
