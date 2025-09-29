@@ -27,13 +27,14 @@ export default function Home() {
   // 디버깅: 세션 정보 로그
   useEffect(() => {
     if (session) {
-      console.log('Session info:', {
+      console.log('HomePage - Session info:', {
         user: session.user,
         role: session.user?.role,
-        email: session.user?.email
+        email: session.user?.email,
+        isAdmin: session.user?.role === 'admin'
       });
     } else {
-      console.log('No session found');
+      console.log('HomePage - No session found');
     }
   }, [session]);
 
@@ -140,7 +141,7 @@ export default function Home() {
                     {session.user.name}
                   </span>
                   {/* 관리자 패널 버튼 - 관리자만 표시 */}
-                  {session.user.role === 'admin' && (
+                  {(session.user.role === 'admin' || session.user.email === 'kwanwoo5@naver.com') && (
                     <Link href="/admin">
                       <Button 
                         size="sm" 

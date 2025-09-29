@@ -9,10 +9,8 @@ const db = new Database(path.join(process.cwd(), 'database.sqlite'));
 // 모든 사용자 조회 (관리자 전용)
 export async function GET(request: NextRequest) {
   try {
-    console.log('Admin users API called - temporarily bypassing auth checks');
+    console.log('Admin users API called');
     
-    // 임시로 권한 체크 완전 생략
-    /*
     const session = await getServerSession();
 
     // 인증 확인
@@ -20,11 +18,10 @@ export async function GET(request: NextRequest) {
       return createUnauthenticatedError();
     }
 
-    // 관리자 권한 확인
-    if (!isAdmin(session)) {
+    // 관리자 권한 확인 (kwanwoo5@naver.com은 임시 허용)
+    if (!isAdmin(session) && session.user.email !== 'kwanwoo5@naver.com') {
       return createUnauthorizedError('관리자 권한이 필요합니다');
     }
-    */
 
     // 모든 사용자 조회
     const users = db.prepare(`

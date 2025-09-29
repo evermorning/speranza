@@ -1,8 +1,9 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import Database from "better-sqlite3";
 
-import { userDb } from '@/lib/supabase';
+const db = new Database('database.sqlite');
 
 const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET || 'speranza-development-secret-key-2024-v3-fixed',
@@ -39,7 +40,7 @@ const handler = NextAuth({
           }
 
           console.log('Attempting login for email:', credentials.email);
-          const user = await userDb.findByEmail(credentials.email);
+          const user = db.prepare('SELECT id, email, name, password, role FROM users WHERE email = ?').get(credentials.email);
           
           if (!user) {
             console.log('User not found');
@@ -75,11 +76,17 @@ const handler = NextAuth({
     async session({ session, token }) {
       try {
         if (token && session.user) {
-          const user = await userDb.findByEmail(session.user.email!);
+          const user = db.prepare('SELECT id, email, name, role, provider FROM users WHERE email = ?').get(session.user.email!);
           if (user) {
             session.user.id = user.id;
             session.user.provider = user.provider;
             session.user.role = user.role || 'user'; // 역할 정보 세션에 포함
+            
+            console.log('Session callback - Updated session:', {
+              email: session.user.email,
+              role: session.user.role,
+              dbRole: user.role
+            });
           }
         }
         return session;
