@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://speranza-sigma.vercel.app/sitemap.xml
+Sitemap: https://speranza.vercel.app/sitemap.xml

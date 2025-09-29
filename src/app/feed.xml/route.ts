@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  const baseUrl = 'https://speranza-sigma.vercel.app'
+  const baseUrl = 'https://speranza.vercel.app'
   const currentDate = new Date().toUTCString()
   
   // RSS 피드 XML 생성
