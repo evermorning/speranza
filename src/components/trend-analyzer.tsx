@@ -12,6 +12,7 @@ interface TrendAnalyzerProps {
   apiKey: string;
   onDataUpdate?: (videos: VideoData[]) => void;
   isLoggedIn?: boolean;
+  userRole?: string;
 }
 
 interface VideoData {
@@ -29,7 +30,7 @@ interface VideoData {
   duration?: string;
 }
 
-export default function TrendAnalyzerComponent({ apiKey, onDataUpdate, isLoggedIn = true }: TrendAnalyzerProps) {
+export default function TrendAnalyzerComponent({ apiKey, onDataUpdate, isLoggedIn = true, userRole }: TrendAnalyzerProps) {
   const router = useRouter();
   const [trendingVideos, setTrendingVideos] = useState<VideoData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -279,18 +280,21 @@ export default function TrendAnalyzerComponent({ apiKey, onDataUpdate, isLoggedI
               <div className="text-right">
                 <div className="flex items-center justify-end gap-2 mb-1">
                   <div className="text-sm text-gray-500">검색 횟수</div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setSearchCount(0);
-                      localStorage.removeItem('search-count');
-                    }}
-                    className="h-6 px-2 text-xs"
-                    title="검색 횟수 초기화"
-                  >
-                    초기화
-                  </Button>
+                  {/* 관리자만 초기화 버튼 표시 */}
+                  {(userRole === 'admin' || userRole === 'kwanwoo5@naver.com') && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSearchCount(0);
+                        localStorage.removeItem('search-count');
+                      }}
+                      className="h-6 px-2 text-xs"
+                      title="검색 횟수 초기화"
+                    >
+                      초기화
+                    </Button>
+                  )}
                 </div>
                 <div className="text-2xl font-bold text-blue-600 mb-2">
                   {searchCount} / 3

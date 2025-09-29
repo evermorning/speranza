@@ -355,6 +355,7 @@ export default function Home() {
             <TrendAnalyzerComponent 
               apiKey={apiKey}
               isLoggedIn={!!session?.user}
+              userRole={session?.user?.role}
             />
           </div>
         )}
