@@ -24,6 +24,19 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('trend');
   const [isConfigured, setIsConfigured] = useState(false);
 
+  // 디버깅: 세션 정보 로그
+  useEffect(() => {
+    if (session) {
+      console.log('Session info:', {
+        user: session.user,
+        role: session.user?.role,
+        email: session.user?.email
+      });
+    } else {
+      console.log('No session found');
+    }
+  }, [session]);
+
   // 로그인하지 않은 사용자도 홈페이지에 접근할 수 있도록 주석 처리
   // useEffect(() => {
   //   if (status === 'unauthenticated') {
@@ -126,7 +139,7 @@ export default function Home() {
                   <span className="text-sm text-gray-300">
                     {session.user.name}
                   </span>
-                  {/* 관리자 패널 버튼 - 상단 헤더에 배치 */}
+                  {/* 관리자 패널 버튼 - 관리자만 표시 */}
                   {session.user.role === 'admin' && (
                     <Link href="/admin">
                       <Button 

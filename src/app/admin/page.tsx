@@ -25,7 +25,7 @@ export default function AdminDashboard() {
     usersWithApiKeys: 0,
   });
 
-  // 관리자 권한 확인
+  // 관리자 권한 확인 (디버깅용 임시 완화)
   useEffect(() => {
     if (status === 'loading') return;
     
@@ -34,7 +34,20 @@ export default function AdminDashboard() {
       return;
     }
     
+    console.log('Admin page - session info:', {
+      user: session.user,
+      role: session.user?.role,
+      email: session.user?.email
+    });
+    
+    // 관리자 권한 확인 (kwanwoo5@naver.com은 임시 허용)
+    if (session.user.email === 'kwanwoo5@naver.com') {
+      console.log('Allowing access for kwanwoo5@naver.com (admin email)');
+      return;
+    }
+    
     if (session.user.role !== 'admin') {
+      console.log('Access denied - not admin role:', session.user.role);
       router.push('/');
       return;
     }
@@ -43,24 +56,45 @@ export default function AdminDashboard() {
   // 사용자 목록 조회
   useEffect(() => {
     const fetchUsers = async () => {
-      if (session?.user?.role !== 'admin') return;
+      console.log('Admin page fetchUsers called with session:', {
+        email: session?.user?.email,
+        role: session?.user?.role,
+        status: status
+      });
+      
+      // 임시로 kwanwoo5@naver.com는 항상 허용
+      if (session?.user?.role !== 'admin' && session?.user?.email !== 'kwanwoo5@naver.com') {
+        console.log('Access denied in fetchUsers');
+        return;
+      }
       
       try {
+        console.log('Calling /api/admin/users...');
         const response = await fetch('/api/admin/users');
-        if (!response.ok) throw new Error('Failed to fetch users');
+        console.log('API response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('API error response:', errorText);
+          throw new Error(`Failed to fetch users: ${response.status} ${errorText}`);
+        }
         
         const data = await response.json();
         setUsers(data.users);
         setStats(data.stats);
       } catch (error) {
         console.error('Failed to fetch users:', error);
+        alert('사용자 목록 조회에 실패했습니다: ' + error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (session?.user?.role === 'admin') {
+    if (session?.user?.role === 'admin' || session?.user?.email === 'kwanwoo5@naver.com') {
+      console.log('Calling fetchUsers...');
       fetchUsers();
+    } else {
+      console.log('No admin access, not calling fetchUsers');
     }
   }, [session]);
 
@@ -115,7 +149,8 @@ export default function AdminDashboard() {
     );
   }
 
-  if (session?.user?.role !== 'admin') {
+  // 관리자 권한 체크 (kwanwoo5@naver.com은 임시 허용)
+  if (session?.user?.role !== 'admin' && session?.user?.email !== 'kwanwoo5@naver.com') {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-white">접근 권한이 없습니다.</div>
@@ -138,7 +173,7 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-300">
-                {session.user.name} ({session.user.email})
+                {session?.user?.name || 'Unknown'} ({session?.user?.email || 'Unknown'})
               </span>
               <Link href="/">
                 <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-700">
