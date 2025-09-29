@@ -4,13 +4,14 @@ import bcrypt from "bcryptjs";
 import { userDb } from '@/lib/supabase';
 
 const handler = NextAuth({
-  secret: process.env.NEXTAUTH_SECRET || 'speranza-development-secret-key-2024-v3-fixed',
+  secret: process.env.NEXTAUTH_SECRET || 'speranza-development-secret-key-2024-v3-fixed-longer-key-for-jwt',
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 days
+    secret: process.env.NEXTAUTH_SECRET || 'speranza-development-secret-key-2024-v3-fixed-longer-key-for-jwt',
   },
   cookies: {
     sessionToken: {
@@ -23,7 +24,7 @@ const handler = NextAuth({
       },
     },
   },
-  debug: true, // 개발 환경에서 디버그 활성화
+  debug: false, // JWT 오류를 줄이기 위해 디버그 비활성화
   providers: [
     CredentialsProvider({
       name: "Credentials",
