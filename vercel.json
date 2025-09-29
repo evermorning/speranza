@@ -1,8 +1,6 @@
 {
   "framework": "nextjs",
   "regions": ["icn1"],
-  "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
   "env": {
     "NEXTAUTH_URL": "https://speranza-sigma.vercel.app",
     "NODE_ENV": "production"
