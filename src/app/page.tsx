@@ -152,10 +152,10 @@ export default function Home() {
                     </Link>
                   )}
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => signOut()}
-                    className="text-gray-300 hover:text-white"
+                    className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
                   >
                     로그아웃
                   </Button>
