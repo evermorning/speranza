@@ -59,6 +59,7 @@ const handler = NextAuth({
             id: user.id,
             email: user.email,
             name: user.name,
+            role: user.role || 'user', // 역할 정보 포함 (기본값: user)
           };
         } catch (error) {
           console.error('Login error:', error);
@@ -78,6 +79,7 @@ const handler = NextAuth({
           if (user) {
             session.user.id = user.id;
             session.user.provider = user.provider;
+            session.user.role = user.role || 'user'; // 역할 정보 세션에 포함
           }
         }
         return session;

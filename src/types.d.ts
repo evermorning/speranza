@@ -8,6 +8,7 @@ declare module 'next-auth' {
       email?: string | null;
       image?: string | null;
       provider?: string;
+      role?: 'admin' | 'user';
     }
   }
 }
@@ -22,4 +23,13 @@ export interface User {
   image?: string;
   created_at?: string;
   updated_at?: string;
+  role?: 'admin' | 'user'; // 역할 추가: 관리자 또는 일반 사용자
+}
+
+export interface AdminUser extends User {
+  role: 'admin';
+}
+
+export interface RegularUser extends User {
+  role: 'user';
 }

@@ -313,7 +313,17 @@ export default function Home() {
                         계정에 저장된 API 키로 트렌드 분석을 이용 중입니다.
                       </p>
                     </div>
-                    <div className="ml-auto">
+                    <div className="ml-auto flex items-center gap-2">
+                      {session.user.role === 'admin' && (
+                        <Link href="/admin">
+                          <Button 
+                            size="sm" 
+                            className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                          >
+                            👑 관리자 패널
+                          </Button>
+                        </Link>
+                      )}
                       <Button 
                         size="sm" 
                         className="bg-green-600 hover:bg-green-700 text-white"
