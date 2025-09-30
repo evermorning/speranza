@@ -51,12 +51,31 @@ git clone https://github.com/evermorning/speranza.git
 cd speranza
 ```
 
-### 2. 의존성 설치
+### 2. Supabase 데이터베이스 설정
+
+#### 결제 테이블 생성
+Supabase SQL Editor에서 다음 마이그레이션 파일을 실행하세요:
+
+1. Supabase Dashboard에 로그인
+2. 프로젝트 선택 후 `SQL Editor` 메뉴로 이동
+3. `supabase/migrations/20250930_create_payment_tables.sql` 파일의 내용을 복사
+4. SQL Editor에 붙여넣기 후 `Run` 버튼 클릭
+5. 테이블이 성공적으로 생성되었는지 확인
+
+생성되는 테이블:
+- `subscription_plans`: 구독 플랜 정보
+- `user_subscriptions`: 사용자 구독 정보
+- `payments`: 결제 내역
+- `billing_keys`: 빌링키 (정기결제용)
+- `user_payment_info`: 사용자 결제 정보
+- `refunds`: 환불 내역
+
+### 3. 의존성 설치
 ```bash
 npm install
 ```
 
-### 3. 환경 변수 설정
+### 4. 환경 변수 설정
 `.env.local` 파일을 프로젝트 루트에 생성하고 다음 환경 변수를 설정하세요:
 
 ```env

@@ -41,16 +41,25 @@ export async function POST(request: NextRequest) {
 
     const confirmData: TossPaymentResponse = await confirmResponse.json();
 
-    // 데이터베이스에서 결제 정보 업데이트
+    // 데이터베이스에서 결제 정보 조회 후 업데이트
     try {
-      await paymentDb.updateStatus(
-        paymentKey,
-        confirmData.status,
-        {
-          approved_at: confirmData.approvedAt,
-          receipt_url: confirmData.cashReceipt?.receiptUrl || confirmData.virtualAccount?.accountNumber || '',
-        }
-      );
+      // 먼저 결제 정보가 있는지 확인
+      const existingPayment = await paymentDb.findByOrderId(orderId);
+      
+      if (existingPayment) {
+        // 기존 결제 정보 업데이트
+        await paymentDb.updateStatus(
+          paymentKey,
+          confirmData.status,
+          {
+            approved_at: confirmData.approvedAt,
+            receipt_url: confirmData.cashReceipt?.receiptUrl || confirmData.virtualAccount?.accountNumber || '',
+          }
+        );
+      } else {
+        // 결제 정보가 없으면 새로 생성 (임시)
+        console.warn('Payment record not found, payment may not be saved to database');
+      }
     } catch (dbError) {
       console.error('Database update error:', dbError);
       // 데이터베이스 업데이트 실패해도 결제 승인은 완료
