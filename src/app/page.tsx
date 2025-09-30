@@ -135,19 +135,6 @@ export default function Home() {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              {/* RSS 피드 링크 */}
-              <a 
-                href="/feed.xml" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-orange-500 transition-colors"
-                title="RSS 피드"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3.429 2.571c0-1.414 1.146-2.571 2.571-2.571s2.571 1.157 2.571 2.571-1.146 2.571-2.571 2.571-2.571-1.157-2.571-2.571zm14.571 0c0-1.414 1.146-2.571 2.571-2.571s2.571 1.157 2.571 2.571-1.146 2.571-2.571 2.571-2.571-1.157-2.571-2.571zm-14.571 6.857c0-1.414 1.146-2.571 2.571-2.571s2.571 1.157 2.571 2.571-1.146 2.571-2.571 2.571-2.571-1.157-2.571-2.571zm14.571 0c0-1.414 1.146-2.571 2.571-2.571s2.571 1.157 2.571 2.571-1.146 2.571-2.571 2.571-2.571-1.157-2.571-2.571zm-14.571 6.857c0-1.414 1.146-2.571 2.571-2.571s2.571 1.157 2.571 2.571-1.146 2.571-2.571 2.571-2.571-1.157-2.571-2.571zm14.571 0c0-1.414 1.146-2.571 2.571-2.571s2.571 1.157 2.571 2.571-1.146 2.571-2.571 2.571-2.571-1.157-2.571-2.571z"/>
-                </svg>
-              </a>
-              
               {session?.user ? (
                 <>
                   <span className="text-sm text-gray-300">
@@ -311,6 +298,141 @@ export default function Home() {
           </div>
         ) : (
           <div className="space-y-6">
+            {/* 로그인한 사용자에게 결제 방식 선택 카드 표시 */}
+            {session?.user && (
+              <Card className="bg-gradient-to-r from-purple-900 to-blue-900 border-purple-700">
+                <CardContent className="pt-6 pb-6">
+                  <div className="text-center mb-6">
+                    <Sparkles className="h-12 w-12 text-yellow-400 mx-auto mb-3" />
+                    <h2 className="text-2xl font-bold text-white mb-2">
+                      환영합니다, {session.user.name}님! 🎉
+                    </h2>
+                    <p className="text-gray-300">
+                      원하시는 결제 방식을 선택해주세요
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+                    {/* 단건결제 카드 */}
+                    <div className="bg-gray-800 border border-blue-600 rounded-lg p-6 hover:shadow-xl transition-all">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                          <svg className="h-6 w-6 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                            <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-white">단건결제</h3>
+                          <p className="text-sm text-gray-400">일회성 결제</p>
+                        </div>
+                      </div>
+                      <ul className="space-y-2 mb-4 text-sm text-gray-300">
+                        <li className="flex items-center">
+                          <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          원하는 금액만 한 번 결제
+                        </li>
+                        <li className="flex items-center">
+                          <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          자동 결제 없음
+                        </li>
+                        <li className="flex items-center">
+                          <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          다양한 결제수단 지원
+                        </li>
+                      </ul>
+                      <Link href="/payment/one-time">
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                          단건결제 시작하기
+                          <svg className="ml-2 h-4 w-4" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                            <path d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                          </svg>
+                        </Button>
+                      </Link>
+                    </div>
+
+                    {/* 정기결제 카드 */}
+                    <div className="bg-gray-800 border-2 border-purple-600 rounded-lg p-6 hover:shadow-xl transition-all relative">
+                      <div className="absolute -top-3 right-4">
+                        <span className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                          ⭐ 추천
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                          <svg className="h-6 w-6 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                            <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-white">정기결제</h3>
+                          <p className="text-sm text-gray-400">자동결제 구독</p>
+                        </div>
+                      </div>
+                      <ul className="space-y-2 mb-4 text-sm text-gray-300">
+                        <li className="flex items-center">
+                          <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          카드 등록 후 자동 결제
+                        </li>
+                        <li className="flex items-center">
+                          <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          별도 인증 없이 편리
+                        </li>
+                        <li className="flex items-center">
+                          <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          언제든지 해지 가능
+                        </li>
+                      </ul>
+                      <div className="space-y-2">
+                        <Link href="/billing/register">
+                          <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
+                            정기결제 등록하기
+                            <svg className="ml-2 h-4 w-4" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                              <path d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                          </Button>
+                        </Link>
+                        <Link href="/subscription">
+                          <Button variant="outline" className="w-full border-purple-600 text-purple-400 hover:bg-purple-900 hover:text-white">
+                            구독 플랜 보기
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 비교 정보 */}
+                  <div className="mt-6 p-4 bg-gray-800 rounded-lg max-w-4xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center text-sm">
+                      <div>
+                        <p className="text-gray-400 mb-1">결제 테스트</p>
+                        <p className="text-white font-semibold">무료로 가능</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 mb-1">실제 결제</p>
+                        <p className="text-white font-semibold">테스트 모드</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 mb-1">결제 취소</p>
+                        <p className="text-white font-semibold">언제든지 가능</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
             {/* 로그인하지 않은 사용자에게 안내 메시지 */}
             {!session?.user && (
               <Card className="bg-blue-900 border-blue-700">
