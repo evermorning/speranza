@@ -50,7 +50,7 @@ export default function OneTimePaymentPage() {
     setLoading(true);
 
     try {
-      // 결제 생성 API 호출
+      // 주문 생성 API 호출
       const response = await fetch('/api/payments/create', {
         method: 'POST',
         headers: {
@@ -70,22 +70,27 @@ export default function OneTimePaymentPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || '결제 생성에 실패했습니다.');
+        throw new Error(result.error || '주문 생성에 실패했습니다.');
       }
 
       // 토스페이먼츠 결제 위젯 열기
       if (window.TossPayments) {
-        const tossPayments = window.TossPayments(result.data.paymentKey);
+        const tossPayments = window.TossPayments(result.data.clientKey);
         
         tossPayments.requestPayment('카드', {
           amount: result.data.amount,
           orderId: result.data.orderId,
           orderName: result.data.orderName,
-          customerName: paymentData.customerName,
-          customerEmail: paymentData.customerEmail || session.user.email,
-          customerMobilePhone: paymentData.customerMobilePhone,
+          customerName: result.data.customerName,
+          customerEmail: result.data.customerEmail,
+          customerMobilePhone: result.data.customerMobilePhone,
           successUrl: result.data.successUrl,
           failUrl: result.data.failUrl,
+          cardInstallmentPlan: result.data.cardInstallmentPlan,
+        }).catch((error: any) => {
+          console.error('TossPayments widget error:', error);
+          alert('결제 위젯 오류: ' + (error.message || '알 수 없는 오류'));
+          setLoading(false);
         });
       } else {
         throw new Error('토스페이먼츠 SDK가 로드되지 않았습니다.');
@@ -94,7 +99,6 @@ export default function OneTimePaymentPage() {
     } catch (error) {
       console.error('Payment error:', error);
       alert(error instanceof Error ? error.message : '결제 처리 중 오류가 발생했습니다.');
-    } finally {
       setLoading(false);
     }
   };
