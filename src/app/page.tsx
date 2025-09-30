@@ -312,9 +312,9 @@ export default function Home() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+                  <div className="grid grid-cols-1 gap-4 max-w-4xl mx-auto place-items-center">
                     {/* 단건결제 카드 */}
-                    <div className="bg-gray-800 border border-blue-600 rounded-lg p-6 hover:shadow-xl transition-all">
+                    <div className="bg-gray-800 border border-blue-600 rounded-lg p-6 hover:shadow-xl transition-all w-full md:w-2/3 lg:w-1/2">
                       <div className="flex items-center gap-3 mb-4">
                         <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
                           <svg className="h-6 w-6 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
