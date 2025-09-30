@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TOSS_PAYMENTS_CONFIG, BillingKeyRequest, BillingKeyResponse } from '@/lib/toss-payments';
 import { billingKeyDb } from '@/lib/payment-db';
+import { userDb } from '@/lib/supabase';
 
 // 빌링키 발급 API
 export async function POST(request: NextRequest) {
@@ -25,6 +26,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: '필수 필드가 누락되었습니다.' },
         { status: 400 }
+      );
+    }
+
+    // 사용자 정보 조회 (userId는 이메일로 전달됨)
+    const user = await userDb.findByEmail(userId);
+    if (!user) {
+      return NextResponse.json(
+        { error: '사용자를 찾을 수 없습니다.' },
+        { status: 404 }
       );
     }
 
@@ -100,7 +110,7 @@ export async function POST(request: NextRequest) {
     // 빌링키 정보를 데이터베이스에 저장
     try {
       await billingKeyDb.create({
-        user_id: userId,
+        user_id: user.id, // 실제 UUID 사용
         billing_key: billingKeyData.billingKey,
         customer_key: billingKeyData.customerKey,
         method: billingKeyData.method,
@@ -111,6 +121,7 @@ export async function POST(request: NextRequest) {
         } : undefined,
         expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1년 후 만료
       });
+      console.log('Billing key saved successfully for user:', user.id);
     } catch (dbError) {
       console.error('Database save error:', dbError);
       return NextResponse.json(
