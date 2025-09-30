@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TOSS_PAYMENTS_CONFIG, TossPaymentsUtils } from '@/lib/toss-payments';
+import { paymentDb } from '@/lib/payment-db';
+import { userDb } from '@/lib/supabase';
 
 // 단건결제 주문 생성 API (토스페이먼츠 위젯용)
 export async function POST(request: NextRequest) {
@@ -32,8 +34,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 고유 주문 ID 생성
+    // 사용자 정보 조회
+    const user = await userDb.findByEmail(userEmail);
+    if (!user) {
+      return NextResponse.json(
+        { error: '사용자를 찾을 수 없습니다.' },
+        { status: 404 }
+      );
+    }
+
+    // 고유 주문 ID 및 임시 결제 키 생성
     const orderId = TossPaymentsUtils.generateOrderId();
+    const tempPaymentKey = `temp_${orderId}`; // 임시 결제 키 (나중에 실제 결제 키로 업데이트)
+
+    // 데이터베이스에 주문 정보 미리 저장 (pending 상태)
+    try {
+      await paymentDb.create({
+        user_id: user.id,
+        payment_key: tempPaymentKey,
+        order_id: orderId,
+        order_name: orderName,
+        amount: amount,
+        currency: 'KRW',
+        payment_method: 'card',
+        status: 'pending',
+        payment_type: 'one_time',
+      });
+      console.log('Order created in database:', orderId);
+    } catch (dbError) {
+      console.error('Database save error:', dbError);
+      // 데이터베이스 저장 실패해도 주문 생성은 진행 (나중에 결제 승인 시 재시도)
+    }
 
     // 토스페이먼츠 위젯용 주문 정보 반환
     // 실제 결제는 클라이언트에서 토스페이먼츠 위젯을 통해 진행
