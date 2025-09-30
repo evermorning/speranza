@@ -76,7 +76,7 @@ export default function BillingRegisterPage() {
       }
 
       alert('빌링키가 성공적으로 등록되었습니다!');
-      router.push('/billing/manage');
+      router.push('/');
 
     } catch (error) {
       console.error('Billing key registration error:', error);
