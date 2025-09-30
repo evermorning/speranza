@@ -120,29 +120,37 @@ export default function BillingRegisterPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    만료년도 *
+                    만료년도 (YY) *
                   </label>
                   <Input
                     name="cardExpirationYear"
                     value={cardData.cardExpirationYear}
                     onChange={handleInputChange}
-                    placeholder="2025"
+                    placeholder="25"
+                    maxLength={2}
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     required
                   />
+                  <p className="text-xs text-gray-400 mt-1">
+                    예: 2025년 → 25
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    만료월 *
+                    만료월 (MM) *
                   </label>
                   <Input
                     name="cardExpirationMonth"
                     value={cardData.cardExpirationMonth}
                     onChange={handleInputChange}
                     placeholder="12"
+                    maxLength={2}
                     className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     required
                   />
+                  <p className="text-xs text-gray-400 mt-1">
+                    예: 12월 → 12, 3월 → 03
+                  </p>
                 </div>
               </div>
 
@@ -242,12 +250,25 @@ export default function BillingRegisterPage() {
               </Button>
             </div>
 
+            {/* 테스트 카드 정보 */}
+            <div className="bg-yellow-900 border border-yellow-700 rounded-lg p-4">
+              <h4 className="font-semibold text-yellow-300 mb-2">💳 테스트 카드 정보</h4>
+              <ul className="text-sm text-yellow-200 space-y-1 font-mono">
+                <li>• 카드번호: 4242-4242-4242-4242</li>
+                <li>• 만료년도: 25 (2025년)</li>
+                <li>• 만료월: 12</li>
+                <li>• 주민등록번호: 901201</li>
+                <li>• 카드 비밀번호: 12</li>
+              </ul>
+            </div>
+
             {/* 안내 메시지 */}
             <div className="bg-blue-900 border border-blue-700 rounded-lg p-4">
               <h4 className="font-semibold text-blue-300 mb-2">정기결제 안내</h4>
               <ul className="text-sm text-blue-200 space-y-1">
                 <li>• 등록된 카드로 자동 결제됩니다.</li>
                 <li>• 카드 정보는 안전하게 암호화되어 저장됩니다.</li>
+                <li>• 연도는 2자리 (25), 월은 2자리 (01~12)로 입력하세요.</li>
                 <li>• 언제든지 등록된 카드를 변경할 수 있습니다.</li>
                 <li>• 정기결제를 해지하려면 마이페이지에서 해지하세요.</li>
               </ul>

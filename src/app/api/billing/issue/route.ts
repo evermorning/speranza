@@ -37,12 +37,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 카드 유효기간 형식 검증 및 변환
+    let formattedYear = cardExpirationYear.trim();
+    let formattedMonth = cardExpirationMonth.trim().padStart(2, '0');
+
+    // 연도가 4자리인 경우 뒤 2자리만 사용 (2025 → 25)
+    if (formattedYear.length === 4) {
+      formattedYear = formattedYear.substring(2);
+    }
+
+    // 연도가 2자리가 아니면 에러
+    if (formattedYear.length !== 2 || isNaN(Number(formattedYear))) {
+      return NextResponse.json(
+        { error: '유효기간 연도는 2자리 숫자여야 합니다. (예: 25)' },
+        { status: 400 }
+      );
+    }
+
+    // 월이 01~12 범위가 아니면 에러
+    const monthNum = Number(formattedMonth);
+    if (formattedMonth.length !== 2 || monthNum < 1 || monthNum > 12) {
+      return NextResponse.json(
+        { error: '유효기간 월은 01~12 사이여야 합니다. (예: 03, 12)' },
+        { status: 400 }
+      );
+    }
+
     // 빌링키 발급 요청 데이터 구성
     const billingKeyRequest: BillingKeyRequest = {
       customerKey,
       cardNumber: cleanCardNumber,
-      cardExpirationYear,
-      cardExpirationMonth,
+      cardExpirationYear: formattedYear,
+      cardExpirationMonth: formattedMonth,
       customerIdentityNumber,
       cardPassword,
       customerName,
