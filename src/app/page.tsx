@@ -346,15 +346,14 @@ export default function Home() {
                           다양한 결제수단 지원
                         </li>
                       </ul>
-                      <Button 
-                        className="w-full bg-gray-600 text-gray-300 cursor-not-allowed" 
-                        disabled
-                      >
-                        준비 중 (토스페이먼츠 연동 예정)
-                        <svg className="ml-2 h-4 w-4" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </Button>
+                      <Link href="/payment/one-time">
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                          단건결제 시작하기
+                          <svg className="ml-2 h-4 w-4" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                            <path d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                          </svg>
+                        </Button>
+                      </Link>
                     </div>
 
                     {/* 정기결제 카드 */}
@@ -396,18 +395,17 @@ export default function Home() {
                         </li>
                       </ul>
                       <div className="space-y-2">
-                        <Button 
-                          className="w-full bg-gray-600 text-gray-300 cursor-not-allowed" 
-                          disabled
-                        >
-                          준비 중 (토스페이먼츠 연동 예정)
-                          <svg className="ml-2 h-4 w-4" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </Button>
+                        <Link href="/billing/register">
+                          <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
+                            정기결제 등록하기
+                            <svg className="ml-2 h-4 w-4" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                              <path d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                          </Button>
+                        </Link>
                         <Button 
                           variant="outline" 
-                          className="w-full border-gray-600 text-gray-400 cursor-not-allowed" 
+                          className="w-full border-purple-600 text-purple-400 hover:bg-purple-900 hover:text-white"
                           disabled
                         >
                           구독 플랜 준비 중

@@ -1,336 +1,266 @@
-// 토스페이먼츠 API 클라이언트
-// 서버 사이드에서 토스페이먼츠 API를 호출하기 위한 유틸리티
+// 토스페이먼츠 설정 및 유틸리티 함수
 
-import type { TossPaymentResponse } from '@/types/payment';
+// 토스페이먼츠 API 키 설정
+export const TOSS_PAYMENTS_CONFIG = {
+  clientKey: 'test_ck_Gv6LjeKD8aj04PvMoOeL3wYxAdXy',
+  secretKey: 'test_sk_DnyRpQWGrN9pM6nOWl50VKwv1M9E',
+  baseUrl: 'https://api.tosspayments.com',
+  isTest: true, // 테스트 모드
+};
 
-const TOSS_API_BASE_URL = 'https://api.tosspayments.com/v1';
-const SECRET_KEY = process.env.TOSS_SECRET_KEY || '';
+// 결제 요청 타입
+export interface PaymentRequest {
+  orderId: string;
+  orderName: string;
+  amount: number;
+  customerEmail?: string;
+  customerName?: string;
+  customerMobilePhone?: string;
+  successUrl: string;
+  failUrl: string;
+  cardInstallmentPlan?: number;
+  useEscrow?: boolean;
+  taxFreeAmount?: number;
+  taxExemptionAmount?: number;
+}
 
-/**
- * 토스페이먼츠 API 요청을 위한 기본 헤더
- */
-function getHeaders() {
-  const encodedKey = Buffer.from(`${SECRET_KEY}:`).toString('base64');
-  return {
-    'Authorization': `Basic ${encodedKey}`,
-    'Content-Type': 'application/json',
+// 빌링키 발급 요청 타입
+export interface BillingKeyRequest {
+  customerKey: string;
+  cardNumber: string;
+  cardExpirationYear: string;
+  cardExpirationMonth: string;
+  customerIdentityNumber: string;
+  cardPassword: string;
+  customerName: string;
+  customerEmail?: string;
+  customerMobilePhone?: string;
+}
+
+// 정기결제 요청 타입
+export interface SubscriptionPaymentRequest {
+  billingKey: string;
+  customerKey: string;
+  orderId: string;
+  orderName: string;
+  amount: number;
+  customerEmail?: string;
+  customerName?: string;
+  customerMobilePhone?: string;
+  taxFreeAmount?: number;
+  taxExemptionAmount?: number;
+}
+
+// 토스페이먼츠 API 응답 타입
+export interface TossPaymentResponse {
+  paymentKey: string;
+  orderId: string;
+  orderName: string;
+  status: string;
+  requestedAt: string;
+  approvedAt?: string;
+  card?: {
+    company: string;
+    number: string;
+    installmentPlanMonths: number;
+    isInterestFree: boolean;
+    approveNo: string;
+    useCardPoint: boolean;
+    useDiscount: boolean;
+    useEasyPay: boolean;
+    useBonus: boolean;
   };
-}
-
-/**
- * 결제 승인
- * 결제창에서 결제를 완료한 후 최종적으로 결제를 승인합니다.
- * @param paymentKey - 토스페이먼츠 결제 키
- * @param orderId - 주문 ID
- * @param amount - 결제 금액
- */
-export async function confirmPayment(
-  paymentKey: string,
-  orderId: string,
-  amount: number
-): Promise<TossPaymentResponse> {
-  const response = await fetch(`${TOSS_API_BASE_URL}/payments/confirm`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify({
-      paymentKey,
-      orderId,
-      amount,
-    }),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || '결제 승인에 실패했습니다.');
-  }
-
-  return data;
-}
-
-/**
- * 결제 조회
- * paymentKey로 결제 정보를 조회합니다.
- * @param paymentKey - 토스페이먼츠 결제 키
- */
-export async function getPayment(paymentKey: string): Promise<TossPaymentResponse> {
-  const response = await fetch(`${TOSS_API_BASE_URL}/payments/${paymentKey}`, {
-    method: 'GET',
-    headers: getHeaders(),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || '결제 조회에 실패했습니다.');
-  }
-
-  return data;
-}
-
-/**
- * orderId로 결제 조회
- * @param orderId - 주문 ID
- */
-export async function getPaymentByOrderId(orderId: string): Promise<TossPaymentResponse> {
-  const response = await fetch(`${TOSS_API_BASE_URL}/payments/orders/${orderId}`, {
-    method: 'GET',
-    headers: getHeaders(),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || '결제 조회에 실패했습니다.');
-  }
-
-  return data;
-}
-
-/**
- * 결제 취소
- * @param paymentKey - 토스페이먼츠 결제 키
- * @param cancelReason - 취소 사유
- * @param cancelAmount - 취소 금액 (부분 취소 시)
- * @param refundReceiveAccount - 환불 계좌 정보 (가상계좌 환불 시)
- */
-export async function cancelPayment(
-  paymentKey: string,
-  cancelReason: string,
-  cancelAmount?: number,
-  refundReceiveAccount?: {
-    bank: string;
+  virtualAccount?: {
+    accountType: string;
     accountNumber: string;
-    holderName: string;
-  }
-): Promise<TossPaymentResponse> {
-  const body: any = {
-    cancelReason,
+    bankCode: string;
+    customerName: string;
+    dueDate: string;
+    refundStatus: string;
+    expired: boolean;
+    settlementStatus: string;
   };
-
-  // 부분 취소인 경우 금액 지정
-  if (cancelAmount !== undefined) {
-    body.cancelAmount = cancelAmount;
-  }
-
-  // 가상계좌 환불인 경우 계좌 정보 추가
-  if (refundReceiveAccount) {
-    body.refundReceiveAccount = refundReceiveAccount;
-  }
-
-  const response = await fetch(`${TOSS_API_BASE_URL}/payments/${paymentKey}/cancel`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify(body),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || '결제 취소에 실패했습니다.');
-  }
-
-  return data;
-}
-
-/**
- * 빌링키 발급 (카드 정보로)
- * 카드 정보를 직접 받아 빌링키를 발급합니다.
- * @param customerKey - 고객 고유 키
- * @param cardNumber - 카드 번호
- * @param cardExpirationYear - 카드 유효 연도 (YY)
- * @param cardExpirationMonth - 카드 유효 월 (MM)
- * @param customerIdentityNumber - 생년월일 6자리 (YYMMDD) 또는 사업자번호 10자리
- * @param cardPassword - 카드 비밀번호 앞 2자리 (선택)
- * @param customerName - 고객 이름 (선택)
- * @param customerEmail - 고객 이메일 (선택)
- */
-export async function issueBillingKeyWithCard(
-  customerKey: string,
-  cardNumber: string,
-  cardExpirationYear: string,
-  cardExpirationMonth: string,
-  customerIdentityNumber: string,
-  cardPassword?: string,
-  customerName?: string,
-  customerEmail?: string
-): Promise<any> {
-  const body: any = {
-    customerKey,
-    cardNumber,
-    cardExpirationYear,
-    cardExpirationMonth,
-    customerIdentityNumber,
+  transfer?: {
+    bankCode: string;
+    settlementStatus: string;
   };
-
-  if (cardPassword) body.cardPassword = cardPassword;
-  if (customerName) body.customerName = customerName;
-  if (customerEmail) body.customerEmail = customerEmail;
-
-  const response = await fetch(`${TOSS_API_BASE_URL}/billing/authorizations/card`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify(body),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || '빌링키 발급에 실패했습니다.');
-  }
-
-  return data;
-}
-
-/**
- * 빌링키 발급 (authKey로)
- * 결제창에서 받은 authKey로 빌링키를 발급합니다.
- * @param customerKey - 고객 고유 키
- * @param authKey - 카드 인증 키
- */
-export async function issueBillingKeyWithAuthKey(
-  customerKey: string,
-  authKey: string
-): Promise<any> {
-  const response = await fetch(`${TOSS_API_BASE_URL}/billing/authorizations/issue`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify({
-      customerKey,
-      authKey,
-    }),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || '빌링키 발급에 실패했습니다.');
-  }
-
-  return data;
-}
-
-/**
- * 빌링키로 결제 요청
- * 발급받은 빌링키로 정기결제를 진행합니다.
- * @param billingKey - 빌링키
- * @param customerKey - 고객 고유 키
- * @param orderId - 주문 ID
- * @param orderName - 주문명
- * @param amount - 결제 금액
- * @param customerEmail - 고객 이메일
- * @param customerName - 고객 이름
- */
-export async function requestBillingPayment(
-  billingKey: string,
-  customerKey: string,
-  orderId: string,
-  orderName: string,
-  amount: number,
-  customerEmail?: string,
-  customerName?: string
-): Promise<TossPaymentResponse> {
-  const body: any = {
-    customerKey,
-    amount,
-    orderId,
-    orderName,
+  mobilePhone?: {
+    customerMobilePhone: string;
+    settlementStatus: string;
+    receiptUrl: string;
   };
-
-  if (customerEmail) body.customerEmail = customerEmail;
-  if (customerName) body.customerName = customerName;
-
-  const response = await fetch(`${TOSS_API_BASE_URL}/billing/${billingKey}`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify(body),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || '빌링 결제에 실패했습니다.');
-  }
-
-  return data;
+  giftCertificate?: {
+    approveNo: string;
+    settlementStatus: string;
+  };
+  cashReceipt?: {
+    receiptKey: string;
+    orderId: string;
+    orderName: string;
+    type: string;
+    issueNumber: string;
+    receiptUrl: string;
+    businessNumber: string;
+    transactionType: string;
+    tradeType: string;
+    taxFreeAmount: number;
+    supplyAmount: number;
+    vatAmount: number;
+    serviceAmount: number;
+    totalAmount: number;
+    cultureExpense: boolean;
+    amount: number;
+  };
+  cancels?: Array<{
+    cancelId: string;
+    cancelAmount: number;
+    cancelReason: string;
+    taxFreeAmount: number;
+    taxExemptionAmount: number;
+    refundableAmount: number;
+    easyPayDiscountAmount: number;
+    canceledAt: string;
+    transactionKey: string;
+    receiptKey: string;
+  }>;
+  secret?: string;
+  type?: string;
+  easyPay?: {
+    provider: string;
+    amount: number;
+    discountAmount: number;
+  };
+  country: string;
+  failure?: {
+    code: string;
+    message: string;
+  };
+  totalAmount: number;
+  balanceAmount: number;
+  suppliedAmount: number;
+  vat: number;
+  taxFreeAmount: number;
+  method: string;
+  version: string;
 }
 
-/**
- * 빌링키 삭제
- * 발급받은 빌링키를 삭제합니다.
- * @param billingKey - 빌링키
- * @param customerKey - 고객 고유 키
- */
-export async function deleteBillingKey(
-  billingKey: string,
-  customerKey: string
-): Promise<void> {
-  const response = await fetch(`${TOSS_API_BASE_URL}/billing/${billingKey}`, {
-    method: 'DELETE',
-    headers: getHeaders(),
-    body: JSON.stringify({ customerKey }),
-  });
-
-  if (!response.ok) {
-    const data = await response.json();
-    throw new Error(data.message || '빌링키 삭제에 실패했습니다.');
-  }
+// 빌링키 응답 타입
+export interface BillingKeyResponse {
+  billingKey: string;
+  customerKey: string;
+  status: string;
+  method: string;
+  card?: {
+    company: string;
+    number: string;
+    cardType: string;
+    ownerType: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
-/**
- * 가상계좌 조회
- * @param paymentKey - 토스페이먼츠 결제 키
- */
-export async function getVirtualAccount(paymentKey: string): Promise<TossPaymentResponse> {
-  return getPayment(paymentKey);
-}
+// 유틸리티 함수들
+export const TossPaymentsUtils = {
+  // 고유 주문 ID 생성
+  generateOrderId: (): string => {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    return `order_${timestamp}_${random}`;
+  },
 
-/**
- * 현금영수증 발급
- * @param paymentKey - 토스페이먼츠 결제 키
- * @param type - 현금영수증 타입 (소득공제, 지출증빙)
- * @param registrationNumber - 현금영수증 발급 번호 (휴대폰 번호, 사업자번호 등)
- */
-export async function issueCashReceipt(
-  paymentKey: string,
-  type: '소득공제' | '지출증빙',
-  registrationNumber: string
-): Promise<any> {
-  const response = await fetch(`${TOSS_API_BASE_URL}/payments/${paymentKey}/cash-receipts`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify({
-      type,
-      registrationNumber,
-    }),
-  });
+  // 고유 빌링키 ID 생성
+  generateBillingKeyId: (): string => {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    return `billing_${timestamp}_${random}`;
+  },
 
-  const data = await response.json();
+  // 고유 고객 키 생성
+  generateCustomerKey: (userId: string): string => {
+    return `customer_${userId}`;
+  },
 
-  if (!response.ok) {
-    throw new Error(data.message || '현금영수증 발급에 실패했습니다.');
-  }
+  // 결제 상태 확인
+  isPaymentSuccess: (status: string): boolean => {
+    return status === 'DONE';
+  },
 
-  return data;
-}
+  // 결제 실패 여부 확인
+  isPaymentFailed: (status: string): boolean => {
+    return ['CANCELED', 'PARTIAL_CANCELED', 'ABORTED', 'EXPIRED'].includes(status);
+  },
 
-/**
- * 주문 ID 생성 유틸리티
- * 고유한 주문 ID를 생성합니다.
- * @param userId - 사용자 ID
- * @param prefix - 접두사 (기본값: 'ORDER')
- */
-export function generateOrderId(userId: string, prefix = 'ORDER'): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 9);
-  return `${prefix}_${userId}_${timestamp}_${random}`.toUpperCase();
-}
+  // 빌링키 상태 확인
+  isBillingKeyActive: (status: string): boolean => {
+    return status === 'ISSUED';
+  },
 
-/**
- * Customer Key 생성 유틸리티
- * 고객 고유 키를 생성합니다.
- * @param userId - 사용자 ID
- */
-export function generateCustomerKey(userId: string): string {
-  return `CUSTOMER_${userId}`;
-}
+  // 카드 번호 마스킹
+  maskCardNumber: (cardNumber: string): string => {
+    if (cardNumber.length < 8) return cardNumber;
+    return cardNumber.substring(0, 4) + '****' + cardNumber.substring(cardNumber.length - 4);
+  },
+
+  // 금액 포맷팅 (원 단위)
+  formatAmount: (amount: number): string => {
+    return new Intl.NumberFormat('ko-KR').format(amount) + '원';
+  },
+
+  // 결제 수단 한글 변환
+  getPaymentMethodName: (method: string): string => {
+    const methodMap: { [key: string]: string } = {
+      '카드': '신용카드',
+      '가상계좌': '가상계좌',
+      '계좌이체': '계좌이체',
+      '휴대폰': '휴대폰 결제',
+      '문화상품권': '문화상품권',
+      '도서문화상품권': '도서문화상품권',
+      '게임문화상품권': '게임문화상품권',
+    };
+    return methodMap[method] || method;
+  },
+};
+
+// 에러 메시지 매핑
+export const TossPaymentsErrorMessages: { [key: string]: string } = {
+  'INVALID_CARD_COMPANY': '지원하지 않는 카드사입니다.',
+  'INVALID_CARD_NUMBER': '유효하지 않은 카드 번호입니다.',
+  'INVALID_CARD_EXPIRY': '유효하지 않은 카드 유효기간입니다.',
+  'INVALID_CARD_PASSWORD': '유효하지 않은 카드 비밀번호입니다.',
+  'INVALID_CUSTOMER_IDENTITY_NUMBER': '유효하지 않은 주민등록번호입니다.',
+  'CARD_QUOTA_EXCEEDED': '카드 한도가 초과되었습니다.',
+  'INSUFFICIENT_FUNDS': '잔액이 부족합니다.',
+  'PAYMENT_BLOCKED': '결제가 차단되었습니다.',
+  'PAYMENT_TIMEOUT': '결제 시간이 초과되었습니다.',
+  'UNKNOWN_ERROR': '알 수 없는 오류가 발생했습니다.',
+};
+
+// 결제 수단별 설정
+export const PaymentMethodConfig = {
+  card: {
+    name: '신용카드',
+    icon: '💳',
+    description: '안전하고 빠른 카드 결제',
+  },
+  virtualAccount: {
+    name: '가상계좌',
+    icon: '🏦',
+    description: '입금 후 자동 결제 완료',
+  },
+  transfer: {
+    name: '계좌이체',
+    icon: '💰',
+    description: '실시간 계좌이체',
+  },
+  mobile: {
+    name: '휴대폰',
+    icon: '📱',
+    description: '휴대폰 요금으로 결제',
+  },
+  giftCertificate: {
+    name: '상품권',
+    icon: '🎁',
+    description: '문화상품권 등 상품권 결제',
+  },
+};
