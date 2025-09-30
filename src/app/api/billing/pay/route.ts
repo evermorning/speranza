@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TOSS_PAYMENTS_CONFIG, SubscriptionPaymentRequest, TossPaymentResponse } from '@/lib/toss-payments';
 import { paymentDb, billingKeyDb } from '@/lib/payment-db';
+import { userDb } from '@/lib/supabase';
 
 // 정기결제 API
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
+    let { 
       billingKey,
       customerKey,
       orderName,
@@ -17,6 +18,26 @@ export async function POST(request: NextRequest) {
       userId,
       subscriptionId
     } = body;
+
+    // 보조 채움 로직: email만 넘어온 경우 서버에서 userId/billingKey/customerKey 자동 조회
+    if ((!billingKey || !customerKey || !userId) && customerEmail) {
+      try {
+        const user = await userDb.findByEmail(customerEmail);
+        if (user?.id) {
+          userId = user.id;
+          // 사용자 최신 활성 빌링키 조회 (활성 + 최신 생성일 우선)
+          const latest = await billingKeyDb.findLatestActiveByUserId
+            ? await billingKeyDb.findLatestActiveByUserId(user.id)
+            : null;
+          if (latest) {
+            billingKey = billingKey || latest.billing_key || latest.billingKey;
+            customerKey = customerKey || latest.customer_key || latest.customerKey;
+          }
+        }
+      } catch (e) {
+        // 무시하고 아래 필수값 검증에서 처리
+      }
+    }
 
     // 필수 필드 검증
     if (!billingKey || !customerKey || !orderName || !amount || !userId) {
