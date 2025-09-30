@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TOSS_PAYMENTS_CONFIG, SubscriptionPaymentRequest, TossPaymentResponse } from '@/lib/toss-payments';
-import { paymentDb, billingKeyDb } from '@/lib/payment-db';
+import { paymentDb, billingKeyDb, planDb, subscriptionDb } from '@/lib/payment-db';
 import { userDb } from '@/lib/supabase';
 
 // 정기결제 API
@@ -64,6 +64,28 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+      // 결제 전 사용자 구독이 없으면 기본 플랜으로 생성
+      // 기본 플랜은 'basic'이 존재한다고 가정 (마이그레이션에서 생성)
+      try {
+        const existingSub = await subscriptionDb.findByUserId(userId);
+        if (!existingSub) {
+          const basicPlan = await planDb.findByName('basic');
+          if (!basicPlan) {
+            return NextResponse.json(
+              { error: '기본 플랜을 찾을 수 없습니다. 관리자에게 문의하세요.' },
+              { status: 500 }
+            );
+          }
+          await subscriptionDb.create({
+            user_id: userId,
+            plan_id: basicPlan.id,
+            billing_key_id: billingKeyInfo.id,
+          });
+        }
+      } catch (subError) {
+        console.error('Subscription ensure error:', subError);
+        // 구독 생성 실패해도 결제는 시도 가능
+      }
     } catch (error) {
       console.error('Billing key validation error:', error);
       return NextResponse.json(
@@ -100,6 +122,7 @@ export async function POST(request: NextRequest) {
         orderId,
         orderName,
         amount,
+        customerKey,
         customerEmail,
         customerName,
         customerMobilePhone,
@@ -121,9 +144,11 @@ export async function POST(request: NextRequest) {
 
     // 결제 정보를 데이터베이스에 저장
     try {
+      // 최신 활성 구독 조회 (방금 생성되었을 수 있음)
+      const activeSub = await subscriptionDb.findByUserId(userId);
       await paymentDb.create({
         user_id: userId,
-        subscription_id: subscriptionId,
+        subscription_id: activeSub?.id || subscriptionId,
         payment_key: paymentData.paymentKey,
         order_id: paymentData.orderId,
         order_name: paymentData.orderName,

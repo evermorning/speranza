@@ -300,6 +300,24 @@ export const billingKeyDb = {
     return data || [];
   },
 
+  // 최신 활성 빌링키 1건 조회 (정기결제 기본 키로 사용)
+  async findLatestActiveByUserId(userId: string): Promise<BillingKey | null> {
+    const { data, error } = await supabase
+      .from('billing_keys')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(`빌링키 조회 실패: ${error.message}`);
+    }
+
+    return data ?? null;
+  },
+
   // 빌링키로 조회
   async findByBillingKey(billingKey: string): Promise<BillingKey | null> {
     const { data, error } = await supabase

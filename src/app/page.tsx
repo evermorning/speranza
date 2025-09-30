@@ -356,62 +356,7 @@ export default function Home() {
                       </Link>
                     </div>
 
-                    {/* 정기결제 카드 */}
-                    <div className="bg-gray-800 border-2 border-purple-600 rounded-lg p-6 hover:shadow-xl transition-all relative">
-                      <div className="absolute -top-3 right-4">
-                        <span className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                          ⭐ 추천
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-                          <svg className="h-6 w-6 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                            <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-bold text-white">정기결제</h3>
-                          <p className="text-sm text-gray-400">자동결제 구독</p>
-                        </div>
-                      </div>
-                      <ul className="space-y-2 mb-4 text-sm text-gray-300">
-                        <li className="flex items-center">
-                          <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          카드 등록 후 자동 결제
-                        </li>
-                        <li className="flex items-center">
-                          <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          별도 인증 없이 편리
-                        </li>
-                        <li className="flex items-center">
-                          <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          언제든지 해지 가능
-                        </li>
-                      </ul>
-                      <div className="space-y-2">
-                        <Link href="/billing/register">
-                          <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
-                            정기결제 등록하기
-                            <svg className="ml-2 h-4 w-4" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                              <path d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
-                          </Button>
-                        </Link>
-                        <Button 
-                          variant="outline" 
-                          className="w-full border-purple-600 text-purple-400 hover:bg-purple-900 hover:text-white"
-                          disabled
-                        >
-                          구독 플랜 준비 중
-                        </Button>
-                      </div>
-                    </div>
+                    
                   </div>
 
                   {/* 비교 정보 */}

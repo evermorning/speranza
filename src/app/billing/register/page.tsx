@@ -250,17 +250,7 @@ export default function BillingRegisterPage() {
               </Button>
             </div>
 
-            {/* 테스트 카드 정보 */}
-            <div className="bg-yellow-900 border border-yellow-700 rounded-lg p-4">
-              <h4 className="font-semibold text-yellow-300 mb-2">💳 테스트 카드 정보</h4>
-              <ul className="text-sm text-yellow-200 space-y-1 font-mono">
-                <li>• 카드번호: 4242-4242-4242-4242</li>
-                <li>• 만료년도: 25 (2025년)</li>
-                <li>• 만료월: 12</li>
-                <li>• 주민등록번호: 901201</li>
-                <li>• 카드 비밀번호: 12</li>
-              </ul>
-            </div>
+            
 
             {/* 안내 메시지 */}
             <div className="bg-blue-900 border border-blue-700 rounded-lg p-4">

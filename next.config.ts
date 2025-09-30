@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   typescript: {
@@ -30,6 +31,8 @@ const nextConfig: NextConfig = {
     // Hydration mismatch 문제 해결을 위한 설정
     optimizePackageImports: ['lucide-react'],
   },
+  // Monorepo/상위 lockfile 경고로 인한 정적 자산 404 방지
+  outputFileTracingRoot: path.join(__dirname),
 };
 
 export default nextConfig;
