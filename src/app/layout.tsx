@@ -21,9 +21,6 @@ export const metadata: Metadata = {
       "naver-site-verification": "1788b4b084fd5d45eaa10a4208a2a3610c422bda",
     },
   },
-  other: {
-    'rss': '/feed.xml',
-  },
 };
 
 import Provider from "./providers";
