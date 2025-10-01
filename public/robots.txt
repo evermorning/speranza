@@ -5,6 +5,7 @@ Disallow: /api/
 
 # RSS 피드
 Allow: /rss.xml
+Allow: /feed.xml
 
 # 사이트맵
 Sitemap: https://speranza.vercel.app/sitemap.xml
